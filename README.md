@@ -66,3 +66,17 @@ Selecting whether or not to use alpha-beta pruning shall be offered to the user 
 configuration option. The effects of using or not using alpha-beta pruning, including
 the effects of searching with various search depths, shall be described fully in the final
 project report.
+
+TIMELINE
+----------------------------------------------------------------------------------------------------------------------------
+R1: November 17
+R2: November 17
+R3: November 18
+alpha-beta: November 25
+R4: November 25
+R5: November 25
+R6: November 27
+R7: November 29
+Coding done: November 29
+Design document done: December 1
+Technical document done: December 3
