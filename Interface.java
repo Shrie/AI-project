@@ -113,7 +113,7 @@ public class Interface extends JFrame implements ActionListener{
 		
 		//Left Panel
 		JPanel left = new JPanel(new GridLayout(0,1));
-		left.setPreferredSize(new Dimension(width / 6, height));
+		left.setPreferredSize(new Dimension(width / 7, height));
 		left.add(new JLabel(""));
 		left.add(new JLabel("Score", JLabel.CENTER));
 		p.add(left);
@@ -121,8 +121,8 @@ public class Interface extends JFrame implements ActionListener{
 		
 		//Right Panel
 		JPanel right = new JPanel(new GridLayout(0,1));
-		JPanel topOptionPane = new JPanel(new CardLayout());
-		JPanel botOptionPane = new JPanel(new CardLayout());
+		topOptionPane = new JPanel(new CardLayout());
+		botOptionPane = new JPanel(new CardLayout());
 		topOptionPane.add(new JPanel(), "Human");
 		botOptionPane.add(new JPanel(), "Human");
 		
