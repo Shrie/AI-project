@@ -65,12 +65,12 @@ public class Board extends JPanel implements MouseListener {
 	
 		for(int i=0; i < nodes.size(); i++){
 			
-			if(nodes.get(i).getTeam() == Node.TEAM2)
+			if(nodes.get(i).getTeam() == Control.TEAM2)
 				g.drawOval(nodes.get(i).x - 5, 
 						   nodes.get(i).y - 5,
 						   10, 10);
 			
-			if(nodes.get(i).getTeam() == Node.TEAM1){
+			if(nodes.get(i).getTeam() == Control.TEAM1){
 				g.drawLine(nodes.get(i).x - 5,
 						   nodes.get(i).y - 5,
 						   nodes.get(i).x + 5,
@@ -150,10 +150,10 @@ public class Board extends JPanel implements MouseListener {
 		for(int i=0; i < nodes.size(); i++)
 			if(nodes.get(i).isInRange(e.getX(), e.getY()))
 				if(team1Turn){
-					nodes.get(i).setTeam(Node.TEAM1);
+					nodes.get(i).setTeam(Control.TEAM1);
 					team1Turn = false;
 				}else{
-					nodes.get(i).setTeam(Node.TEAM2);
+					nodes.get(i).setTeam(Control.TEAM2);
 					team1Turn = true;
 				}
 		
