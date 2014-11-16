@@ -6,8 +6,8 @@ public class Control {
 	
 	// CONSTANTS
 	public static final char TEAM1 = 'X', 
-		         			         TEAM2 = 'O',
-		         			         NONE  = 'N';
+		     		 TEAM2 = 'O',
+		     		 NONE  = 'N';
 	
 	// STATIC VARIABLES	
 	private static Control instance; //Instance of our entire program
@@ -26,7 +26,7 @@ public class Control {
 		
 		
 		// Initialize GUI
-		gui = new Interface(800, 500, agents);
+		gui = new Interface(900, 500, agents);
 		
 		
 		/*    OTHER NOTES    */
