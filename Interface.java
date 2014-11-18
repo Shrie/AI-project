@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
@@ -47,7 +48,7 @@ public class Interface extends JFrame implements ActionListener{
 	private JTextField t1score, 
     				   t2score;
 	
-	private JPanel topOptionPane, botOptionPane;
+	private JPanel options, agent1Options, agent2Options; // Panel to toggle agent options and console
 	
 	private Board board;
 	private JSpinner scoreToWin, rings;
@@ -58,11 +59,9 @@ public class Interface extends JFrame implements ActionListener{
 		super("ARTIFICIAL INTELLIGENCE SEMESTER PROJECT");
 		this.width = width;
 		this.height = height;
+		this.agents = agents;
 		
-		JScrollPane pane;
-		add(pane = new JScrollPane(makeConsole()), BorderLayout.WEST);
-		pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		
+		add(makeConsolePane(), BorderLayout.WEST);
 		add(board = new Board(), BorderLayout.CENTER);
 		add(makeInfoPanel(), BorderLayout.EAST);
 		add(makeBar(), BorderLayout.PAGE_END);
@@ -94,12 +93,54 @@ public class Interface extends JFrame implements ActionListener{
 	
 	}
 	
-	private JPanel makeConsole(){
+	private JPanel makeConsolePane(){
 		
-		JPanel p = new JPanel(new BorderLayout());
-		p.setPreferredSize(new Dimension(width / 5, height));
-		p.add(console = new JTextArea(), BorderLayout.CENTER);
+		
+		
+	    options = new JPanel(new CardLayout());
+	    options.setPreferredSize(new Dimension((width - height + 20) / 2, height));
+		
+	    
+		// Top half, agent1's options, bottom half agent2's
+		JPanel agentOptions = new JPanel(new GridLayout(0,1));
+		
+		agent1Options = new JPanel(new CardLayout());
+		agent2Options = new JPanel(new CardLayout());
+		
+		agent1Options.add(createHumanOptionsPane(), "0");
+		agent2Options.add(createHumanOptionsPane(), "0");
+		
+		if(agents != null)
+			for(int i=0; i < agents.size(); i++){
+				agent1Options.add(agents.get(i).createOptionPane(), "" + (i+1));
+				agent2Options.add(agents.get(i).createOptionPane(), "" + (i+1));
+			}
+		
+		agentOptions.add(agent1Options);
+		agentOptions.add(agent2Options);
+		
+		options.add(agentOptions, "options");
+		 
+		
+		// Console
+		JPanel consolePane = new JPanel(new BorderLayout());
+		JScrollPane pane;
+		consolePane.add(pane = new JScrollPane(console = new JTextArea()), BorderLayout.CENTER);
+		pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		console.setEditable(false);
+		options.add(consolePane, "console");
+		
+		
+		
+		return options;
+		
+	}
+	
+	private JPanel createHumanOptionsPane(){
+		
+		JPanel p = new JPanel();
+		p.add(new JLabel("Human Options"));
+		p.setBorder(BorderFactory.createLineBorder(Color.green));
 		
 		return p;
 		
@@ -108,33 +149,13 @@ public class Interface extends JFrame implements ActionListener{
 	
 	private JPanel makeInfoPanel(){
 
-		//Returned panel
-		JPanel p = new JPanel(new GridLayout(1,0));
 		
 		//Left Panel
-		JPanel left = new JPanel(new GridLayout(0,1));
-		left.setPreferredSize(new Dimension(width / 7, height));
-		left.add(new JLabel(""));
-		left.add(new JLabel("Score", JLabel.CENTER));
-		p.add(left);
+		JPanel info = new JPanel(new GridLayout(0,1));
+		info.setPreferredSize(new Dimension((width - height - 30) / 2, height));
+		info.add(new JLabel(""));
+		info.add(new JLabel("Score", JLabel.CENTER));
 		
-		
-		//Right Panel
-		JPanel right = new JPanel(new GridLayout(0,1));
-		topOptionPane = new JPanel(new CardLayout());
-		botOptionPane = new JPanel(new CardLayout());
-		topOptionPane.add(new JPanel(), "Human");
-		botOptionPane.add(new JPanel(), "Human");
-		
-		if(agents != null)
-			for(int i=0; i < agents.size(); i++){
-				topOptionPane.add(agents.get(i).createOptionPane(), agents.get(i).getName());
-				botOptionPane.add(agents.get(i).createOptionPane(), agents.get(i).getName());
-			}
-		
-		p.add(right);
-		
-		// SCORE/WIN COUNTERS
 		
 		JPanel m = new JPanel(new GridLayout());
 		m.add(t1score = new JTextField("0"));
@@ -143,17 +164,19 @@ public class Interface extends JFrame implements ActionListener{
 		m.add(t2score = new JTextField("0"));
 		t2score.setHorizontalAlignment(JTextField.CENTER);
 		t2score.setEditable(false);
-		left.add(m);
+		info.add(m);
 		
 		
 		// ELAPSED TIME TEAM COUNTERS
 		
 		JPanel n = new JPanel(new GridLayout());
 		n.add(t1time = new JLabel("00:00:00", JLabel.CENTER));
+		t1time.setFont(new Font("Courier New", Font.BOLD, 12));
 		n.add(t2time = new JLabel("00:00:00", JLabel.CENTER));
-		left.add(n);
+		t2time.setFont(new Font("Courier New", Font.BOLD, 12));
+		info.add(n);
 		
-		left.add(new JLabel(""));
+		info.add(new JLabel(""));
 		
 		
 		// AGENT SELECTION
@@ -161,44 +184,44 @@ public class Interface extends JFrame implements ActionListener{
 		String[] agentNames = (agents == null)? new String[1] : new String[agents.size() + 1];
 		
 		agentNames[0] = "Human";
-		
+		 
 		if(agents != null)
 			for(int i=0; i < agents.size(); i++)
 				agentNames[i + 1] = agents.get(i).getName();
 			
-		left.add(agent1 = new JComboBox<String>(agentNames));
+		info.add(agent1 = new JComboBox<String>(agentNames));
 		agent1.setBorder(BorderFactory.createTitledBorder("Agent 1"));
 		agent1.setActionCommand("agent1Select");
 		agent1.addActionListener(this);
 		
-		left.add(agent2 = new JComboBox<String>(agentNames));
+		info.add(agent2 = new JComboBox<String>(agentNames));
 		agent2.setBorder(BorderFactory.createTitledBorder("Agent 2"));
 		agent2.setActionCommand("agent2Select");
 		agent2.addActionListener(this);
 		
 
 		// SCORE TO WIN SPINNER
-		left.add(scoreToWin = new JSpinner());
+		info.add(scoreToWin = new JSpinner());
 		((DefaultEditor) scoreToWin.getEditor()).getTextField().setEditable(false);
 		((DefaultEditor) scoreToWin.getEditor()).getTextField().setHorizontalAlignment(JTextField.CENTER);
 		scoreToWin.setBorder(BorderFactory.createTitledBorder("Score to Win"));
 		
 		// NUMBER OF RINGS
-		left.add(rings = new JSpinner());
+		info.add(rings = new JSpinner());
 		((DefaultEditor) rings.getEditor()).getTextField().setEditable(false);
 		((DefaultEditor) rings.getEditor()).getTextField().setHorizontalAlignment(JTextField.CENTER);
 		rings.setValue((int) 5);
 		rings.setBorder(BorderFactory.createTitledBorder("Number of Rings"));
 		
-		left.add(new JLabel(""));
+		info.add(new JLabel(""));
 		
-		left.add(start = new JButton("Start!"));
+		info.add(start = new JButton("Start!"));
 		start.setBackground(Color.gray);
 		start.setOpaque(true);
 		start.setActionCommand("start");
 		start.addActionListener(this);
 		
-		return p;
+		return info;
 		
 	}
 	
@@ -212,17 +235,48 @@ public class Interface extends JFrame implements ActionListener{
 		return t;
 		
 	}
+	
+	// PUBLIC METHODS
+	
+	public void updateT1Time(long time){
+		
+		
+		int cs = (int) time % 60;
+		int sec = (int) (time / 60) % 60; 
+		int min = (int) (time / 3600) % 60;
+		
+		t1time.setText(String.format("%2d:%2d:%2d", min, sec, cs));
+		
+	}
+	
+	public void updateT2Time(long time){
+		
+		
+		int cs = (int) time % 60;
+		int sec = (int) (time / 60) % 60; 
+		int min = (int) (time / 3600) % 60;
+		
+		t2time.setText(String.format("%2d:%2d:%2d", min, sec, cs));
+		
+	}
+	
+	public void setPrompt(String p){
+		
+		prompt.setText(p);
+		
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		CardLayout c1 = (CardLayout) topOptionPane.getLayout();
-		CardLayout c2 = (CardLayout) botOptionPane.getLayout();
-		
+		CardLayout cards = (CardLayout) options.getLayout();
+		CardLayout ag1 = (CardLayout) agent1Options.getLayout();
+		CardLayout ag2 = (CardLayout) agent2Options.getLayout();
 		
 		if(e.getActionCommand().equals("start")){
 			//Starting the game			
 			
+			//Lock everything
 			board.build((int) rings.getValue());
 			start.setEnabled(false);
 			scoreToWin.setEnabled(false);
@@ -230,16 +284,28 @@ public class Interface extends JFrame implements ActionListener{
 			agent1.setEnabled(false);
 			agent2.setEnabled(false);
 			
+			//Show console
+			cards.show(options, "console");
+			
+			//Start Game!
+			boolean t1 = (((String) agent1.getSelectedItem()).equals("Human"))? true : false;
+			boolean t2 = (((String) agent2.getSelectedItem()).equals("Human"))? true : false;
+			
+			Control.instance.startGame(t1, t2);
+			
 		}else if(e.getActionCommand().equals("agent1Select")){
 			//Selecting Agent 1, populating its options
 			
-			c1.show(topOptionPane, (String) agent1.getSelectedItem());
+
+			ag1.show(agent1Options, "" + agent1.getSelectedIndex());
+		
 			
 		}else if(e.getActionCommand().equals("agent2Select")){
 			//Selecting Agent 2, populating its options
 			
-			c2.show(botOptionPane, (String) agent2.getSelectedItem());
 			
+			ag2.show(agent2Options, "" + agent2.getSelectedIndex());
+		
 		}
 	}
 	
