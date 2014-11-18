@@ -151,7 +151,7 @@ public class Control {
 		if(i < 0 || i > stateSpace.length-1 || j < 0 || j > 11)
 			return true;
 		
-		if(stateSpace[i][j] != Control.NONE)
+		if(stateSpace[i][j] != NONE)
 			return true;
 		
 		return !adjacentPlayed(i, j);
@@ -163,25 +163,47 @@ public class Control {
 	 */
 	public boolean adjacentPlayed(int i, int j){
 		
+		// Check top row
+		if(i > 0){
+			if(j > 0){
+				if(stateSpace[i - 1][j - 1] != NONE
+						|| stateSpace[i - 1][j] != NONE
+						|| stateSpace[i - 1][(j + 1) % 12] != NONE)
+					return true;
+				
+			} else if(stateSpace[i - 1][11] != NONE
+					|| stateSpace[i - 1][0] != NONE
+					|| stateSpace[i - 1][1] != NONE)
+				return true;
+		}
+		
+		// Check bottom row
+		if(i < stateSpace.length - 1){
+			if(j > 0){
+				if(stateSpace[i + 1][j - 1] != NONE
+						|| stateSpace[i + 1][j] != NONE
+						|| stateSpace[i + 1][(j + 1) % 12] != NONE)
+					return true;
+				
+			} else if(stateSpace[i + 1][11] != NONE
+					|| stateSpace[i + 1][0] != NONE
+					|| stateSpace[i + 1][1] != NONE)
+				return true;
+			
+		}
+		
+		// Check sides
+		if(j > 0){
+			if(stateSpace[i][j - 1] != NONE
+					|| stateSpace[i][(j + 1) % 12] != NONE)
+				return true;
+			
+		} else if(stateSpace[i][11] != NONE
+				|| stateSpace[i][1] != NONE)
+			return true;
+
 		
 	
-		
-		if(j > 0)
-			if(stateSpace[i][j - 1] != Control.NONE)
-				return true;
-		
-		if(i > 0)
-			if(stateSpace[i - 1][j] != Control.NONE)
-				return true;
-		
-		if(j < 11)
-			if(stateSpace[i][j + 1] != Control.NONE)
-				return true;
-		
-		if(i < stateSpace.length-1)
-			if(stateSpace[i + 1][j] != Control.NONE)
-				return true;
-		
 		return false;
 		
 	}
