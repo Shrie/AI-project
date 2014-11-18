@@ -1,6 +1,6 @@
 AI-project
 ==========
-ACTIVE: COMPLETE
+COMPLETE
 
 R1: PTTT shall implement the basics of Polar Tic-Tac-Toe as described above with
 one significant restriction. The first move may appear anywhere on the board. After
