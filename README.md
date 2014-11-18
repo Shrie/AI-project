@@ -1,6 +1,6 @@
 AI-project
 ==========
-ACTIVE: CHAD
+ACTIVE: COMPLETE
 
 R1: PTTT shall implement the basics of Polar Tic-Tac-Toe as described above with
 one significant restriction. The first move may appear anywhere on the board. After
@@ -9,7 +9,7 @@ adjacent to an existing X or O on the board. (Note that this restriction might b
 relaxed at the end of the semester.) A legal move checker shall be included in the
 implementation and only legal moves shall permitted to be played.
 
-ACTIVE: HUNTER
+ACTIVE: HUNTER & CHAD
 
 R2: PTTT shall incorporate a “win checker” using resolution (with unification). Thus,
 to satisfy this requirement, a set of first-order rules shall be developed to characterize
