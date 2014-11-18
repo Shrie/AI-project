@@ -1,5 +1,6 @@
 package aifinalproject;
 
+
 public class Node {
 
 	private char team;
