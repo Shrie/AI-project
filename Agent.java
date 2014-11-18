@@ -20,7 +20,7 @@ public interface Agent {
 	
 	public String getName();
 	
-	public char[][] makeMove(char[][] stateSpace);
+	public void makeMove();
 	
 	public JPanel createOptionPane();
 	

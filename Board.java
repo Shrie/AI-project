@@ -14,15 +14,13 @@ import javax.swing.JTextArea;
 
 public class Board extends JPanel implements MouseListener {
 	
-	private int rings;
-	private ArrayList<Node> nodes; // Every valid intersection
-	private boolean team1Turn;
+	private int rings = 0;
+	private Node[][] nodes; // Every valid intersection
 	
 	public Board(){
 		
-		this.nodes = new ArrayList<Node>();
 		this.addMouseListener(this);
-		this.team1Turn = true;
+
 	}
 	
 	
@@ -39,20 +37,22 @@ public class Board extends JPanel implements MouseListener {
 		int w = (int) size.getWidth();
 		int x = w / 2;
 		int y = h / 2;
-		
-		if(nodes.size() < 1)
-			gatherIntersections(x, y);
+
 		
 	
 		// Draw lines
 		int increment = w / (rings + 1) / 2;	
-		int base = (int) Math.sqrt(0.5 * (w / 2) * (w / 2));
+		int trigBase = (int) ((Math.cos(Math.PI / 6) * x)); //x is hypotnuse 
+		int trigHeight = (int) ((Math.sin(Math.PI / 6) * x));
 		
+		// Axis
 		g.drawLine(x, 0, x, h);
 		g.drawLine(0, y, w, y);
-		g.drawLine(x - base, y - base, x + base, y + base);
-		g.drawLine(x - base, y + base, x + base, y - base);
 		
+		g.drawLine(x - trigHeight, y + trigBase, x + trigHeight, y - trigBase);
+		g.drawLine(x - trigBase, y + trigHeight, x + trigBase, y - trigHeight);
+		g.drawLine(x - trigBase, y - trigHeight, x + trigBase, y + trigHeight);
+		g.drawLine(x - trigHeight, y - trigBase, x + trigHeight, y + trigBase);
 		
 		// Draw rings
 		for(int i=1; i <= rings + 1; i++)
@@ -62,48 +62,62 @@ public class Board extends JPanel implements MouseListener {
 						   increment * i * 2, 
 						   increment * i * 2);
 		
-	
-		for(int i=0; i < nodes.size(); i++){
-			
-			if(nodes.get(i).getTeam() == Control.TEAM2)
-				g.drawOval(nodes.get(i).x - 5, 
-						   nodes.get(i).y - 5,
-						   10, 10);
-			
-			if(nodes.get(i).getTeam() == Control.TEAM1){
-				g.drawLine(nodes.get(i).x - 5,
-						   nodes.get(i).y - 5,
-						   nodes.get(i).x + 5,
-						   nodes.get(i).y + 5);
+		// Print Node States
+		for(int i=0; i < nodes.length; i++)
+			for(int j=0; j < nodes[i].length; j++){
 				
-				g.drawLine(nodes.get(i).x + 5,
-						   nodes.get(i).y - 5,
-						   nodes.get(i).x - 5,
-						   nodes.get(i).y + 5);
+				if(nodes[i][j].getTeam() == Control.TEAM2)
+					g.drawOval(nodes[i][j].x - 5, 
+							   nodes[i][j].y - 5,
+							   10, 10);
+				
+				if(nodes[i][j].getTeam() == Control.TEAM1){
+					g.drawLine(nodes[i][j].x - 5,
+							   nodes[i][j].y - 5,
+							   nodes[i][j].x + 5,
+							   nodes[i][j].y + 5);
+					
+					g.drawLine(nodes[i][j].x + 5,
+							   nodes[i][j].y - 5,
+							   nodes[i][j].x - 5,
+							   nodes[i][j].y + 5);
+				
+				}
 			}
-		}
 		
 	}
 	
 	
-	private void gatherIntersections(int x, int y){
+	private void initializeNodes(int x, int y){
 		
 		int inc = x / (rings + 1);
 		
 		
-		for(int i=1; i <= rings; i++){
+		for(int i=0; i < rings; i++){
 			
-			int base = inc * i; // Update half-width of circle
-			int z = (int) Math.sqrt(0.5 * (base * base)); // Arc intersect
+			int base = x - ((i+1) * inc); 
+			int trigBase = (int) ((Math.cos(Math.PI / 6) * base)); 
+			int trigHeight = (int) ((Math.sin(Math.PI / 6) * base));
 			
-			nodes.add(new Node(x, y - base)); // Most top
-			nodes.add(new Node(x + z, y - z));
-			nodes.add(new Node(x + base, y));
-			nodes.add(new Node(x + z, y + z));
-			nodes.add(new Node(x, y + base)); // Most bottom
-			nodes.add(new Node(x - z, y + z));
-			nodes.add(new Node(x - base, y));
-			nodes.add(new Node(x - z, y - z));
+			// Quad 1
+			nodes[i][0] = new Node(x, y - base); // Most top
+			nodes[i][1] = new Node(x + trigHeight, y - trigBase);
+			nodes[i][2] = new Node(x + trigBase, y - trigHeight);
+			
+			// Quad 2
+			nodes[i][3] = new Node(x + base, y);
+			nodes[i][4] = new Node(x + trigBase, y + trigHeight);
+			nodes[i][5] = new Node(x + trigHeight, y + trigBase);
+			
+			// Quad 3
+			nodes[i][6] = new Node(x, y + base); // Most bottom
+			nodes[i][7] = new Node(x - trigHeight, y + trigBase);
+			nodes[i][8] = new Node(x - trigBase, y + trigHeight);
+			
+			// Quad 4
+			nodes[i][9] = new Node(x - base, y);
+			nodes[i][10] = new Node(x - trigBase, y - trigHeight);
+			nodes[i][11] = new Node(x - trigHeight, y - trigBase);
 			
 		}
 		
@@ -114,20 +128,20 @@ public class Board extends JPanel implements MouseListener {
 	public void build(int rings){
 		
 		this.rings = rings;
+		nodes = new Node[rings][12];
+		Control.stateSpace = new char[rings][12];
+		initializeNodes((int ) (getSize().getWidth() / 2), (int) (getSize().getHeight() / 2));
+		updateSS();
+		
 		repaint();
 		
 	}
 	
-	public void updateSS(){
+	private void updateSS(){
 		
-		char[][] ss = Control.stateSpace;
-		
-		int k = 0;
-		for(int i=0; i < ss.length; i++)
-			for(int j=0; j < ss[i].length; j++, k++)
-				nodes.get(k).setTeam(ss[i][j]);
-				
-		repaint();
+		for(int i=0; i < nodes.length; i++)
+			for(int j=0; j < nodes[i].length; j++)
+				Control.stateSpace[i][j] = nodes[i][j].getTeam();
 		
 	}
 	
@@ -145,20 +159,31 @@ public class Board extends JPanel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 
-		Interface.print("X:" + e.getX() + " Y:" + e.getY());
+		for(int i=0; i < nodes.length; i++)
+			for(int j=0; j < nodes[i].length; j++)
+				if(nodes[i][j].isInRange(e.getX(), e.getY()))
+					if(Control.instance.team1Turn && Control.instance.isHuman1){
+						
+						if(Control.instance.makeMove(i, j)){
+							nodes[i][j].setTeam(Control.TEAM1);
+							updateSS();
+						}
+						
+						Interface.print("Selected Node at index [" + i + "][" + j + "]");
+						repaint();
+						
+					}else{
+						
+						if(Control.instance.makeMove(i, j)){
+							nodes[i][j].setTeam(Control.TEAM2);
+							updateSS();
+						}
+						
+						Interface.print("Selected Node at index [" + i + "][" + j + "]");
+						repaint();
+					}
 		
-		for(int i=0; i < nodes.size(); i++)
-			if(nodes.get(i).isInRange(e.getX(), e.getY()))
-				if(team1Turn){
-					nodes.get(i).setTeam(Control.TEAM1);
-					team1Turn = false;
-				}else{
-					nodes.get(i).setTeam(Control.TEAM2);
-					team1Turn = true;
-				}
 		
-	
-		repaint();
 	}
 
 	@Override
