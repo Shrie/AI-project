@@ -32,11 +32,13 @@ public class Human implements Agent {
 		return "Human";
 	}
 
+	/**
+	 * Does nothing for a human player. 
+	 * Game turns are instead handled by Control and Board.
+	 */
 	@Override
 	public void makeMove() {
-		// TODO will work somehow with Board.mouseClicked()
-		// and Control.invalidMove()... maybe even just bring invalidMove into 
-		// this class
+
 
 	}
 

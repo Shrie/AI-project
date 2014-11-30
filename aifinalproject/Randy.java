@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.Random;
 
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 
@@ -35,23 +36,23 @@ public class Randy implements Agent {
 
 	@Override
 	public void makeMove() {
-		
-		char[][] ss = Control.stateSpace;
-		
-		Random r = new Random(100);
-		
-		
-		//if(Control.instance.onFirstMove)
-			ss[Math.abs(r.nextInt(69)) % ss.length][Math.abs(r.nextInt(69)) % 11] = player;
-
-			Interface.print("Move made!");
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
+			
+			char[][] ss = Control.stateSpace;
+			
+			Random r = new Random();
+			
+			
+			//if(Control.instance.onFirstMove)
+				ss[Math.abs(r.nextInt(69)) % ss.length][Math.abs(r.nextInt(69)) % 11] = player;
+				
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
 	}
 
 	@Override
@@ -59,8 +60,11 @@ public class Randy implements Agent {
 		
 		JPanel p = new JPanel();
 		p.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+		
+		p.add(new JLabel("Randy the Randomizer"));
+		
 		JSpinner delay = new JSpinner();
-		delay.setBorder(BorderFactory.createTitledBorder("Delay Between Moves"));
+		delay.setBorder(BorderFactory.createTitledBorder("Delay"));
 		
 		p.add(delay);
 		

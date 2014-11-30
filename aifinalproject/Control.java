@@ -13,7 +13,7 @@ public class Control {
 	//=== CONSTANTS ===
 	public static final char PLAYER1 = 'X', 
 							 PLAYER2 = 'O', 
-							 NONE = 'N';
+							 NONE = ' ';
 
 	//=== STATIC VARIABLES ===
 	public static Control instance; // Instance of our entire program
@@ -30,11 +30,16 @@ public class Control {
 				   onFirstMove;    // Is the game on the first move?
 
 	private Thread timer; // Start/stop timer
+	
 	private long time1, // Player 1 time in 1/60th seconds
 				 time2; // Player 2 time in 1/60th seconds
 
 	private Agent player1,
 				  player2;
+	
+	private int scoreToWin,
+				player1Score,
+				player2Score;
 	
 	//=== CONSTRUCTOR ===
 	public Control() {
@@ -71,6 +76,11 @@ public class Control {
 	} // END CONSTRUCTOR
 
 	//=== METHODS ===
+	
+	public void setScoreToWin(int score){
+		
+		scoreToWin = score;
+	}
 	
 	/**
 	 * Initializes a thread which loops every 1/60th of a second and adds a unit of time
@@ -185,64 +195,149 @@ public class Control {
 	 * 
 	 * @param: agent1		Player 1 agent
 	 * @param: agent2		Player 2 agent
+	 * @throws InterruptedException 
 	 */
-	public void playGame(Agent agent1, Agent agent2) {
+	public void playGame(Agent agent1, Agent agent2){
 
+		
+		// Start timer
+		timer.start();
+		
 		// Check for human agents
 		if(agent1.getName().contains("Human"))
-			this.isPlayer1Human = true;
+			isPlayer1Human = true;
 		
 		if(agent2.getName().contains("Human"))
-			this.isPlayer2Human = true;
-
+			isPlayer2Human = true;
+		
 		//Begin first play
 		gui.setPrompt("Player 1, Your Turn!");
-		agent1.makeMove();
-		gui.update();
-		this.onFirstMove = false;
+		agent1.makeMove();			// Make first move
+		gui.update();				// Update board
 		
-		//Begin game loop
-		while(!winFound()){
+		if(isPlayer1Human){
+			
+			while(!Board.moveMade){
+				
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			Board.moveMade = false;
+			
+		}
+		
+		player1Turn = false;		// Player 2 turn
+		onFirstMove = false;		// No longer first turn
+			
+	
+		
+			//Begin game loop
+		while(player1Score != scoreToWin && player2Score != scoreToWin){
+		
+			winCheck(); // Checks Player 1's move
+			
 			
 			gui.setPrompt("Player 2, Your Turn!");
 			agent2.makeMove();
+			
+			if(isPlayer2Human){
+				while(!Board.moveMade){  // Wait for human player to move
+					try {
+						
+						Thread.sleep(10);
+						
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				Board.moveMade = false;
+			}
+			
 			gui.update();
+			player1Turn = true;
+			winCheck(); // Checks Player 2's move
+			
+			
 			
 			gui.setPrompt("Player 1, Your Turn!");
 			agent1.makeMove();
-			gui.update();
 			
+			if(isPlayer1Human){
+				while(!Board.moveMade){
+					
+					try {
+						
+						Thread.sleep(10);
+						
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+				Board.moveMade = false;
+			}
+			
+			gui.update();
+			player1Turn = false;	
 		}
+		
 
 	} // END playGame()
 	
 	/**
-	 * To be called after each player's turn to check for a win.
+	 * To be called after each player's turn to check for a win. 
+	 * If win is found, update playerScore and GUI label.  
 	 * 
 	 * @return		True if any four nodes (of one type) are connected.
 	 */
-	private boolean winFound(){
+	private void winCheck(){
 		
-		//TODO Below is filler junk for now
-		Random r = new Random();
+		Node[][] n = gui.getBoard().getNodes();
 		
-		if(r.nextInt(15) == 9)
-			return true;
-		
-		return false;
-		
-	} // END winFound()
+		for(int i=0; i<n.length; i++)
+			for(int j=0; j<n[i].length; j++)
+				if(n[i][j].winFound()){
+					
+					if(player1Turn)
+						gui.updatePlayer1Score(++player1Score);
+					else
+						gui.updatePlayer2Score(++player2Score);
+					
+					Interface.print("Win Found");
+					gui.getBoard().reset(); // Does not work??
+					return;
+					
+					//TODO Somehow reset and update the board visually
+				}
+			
+	} // END winCheck()
 
 	
 	//=== STATIC METHODS ===
 	
-	/*
+	/**
 	 * To be called in Main as program initializer.
 	 */
 	public static void run() {
 
 		instance = new Control();
 
+	}
+	
+	public static void printSS(){
+		
+		for(int i=0; i<stateSpace.length; i++){
+			for(int j=0; j<12; j++)
+				System.out.print("[" + stateSpace[i][j] + "]");
+			System.out.println();
+		}
 	}
 
 } // END CONTROL

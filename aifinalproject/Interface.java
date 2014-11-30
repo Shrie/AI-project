@@ -16,7 +16,6 @@ import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -28,6 +27,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * Manages the graphical interface. 
@@ -59,7 +59,7 @@ public class Interface extends JFrame
 				   agent1Options, // Panel where options can be changed for agent 1
 				   agent2Options; // Panel where options can be changed for agent 2
 
-	private Board board; // Game board
+	private final Board board; // Game board
 	
 	private JSpinner scoreToWin, // How many games won before program stops and winner declared?
 					 rings;      // How many rings to start with and draw?
@@ -91,6 +91,7 @@ public class Interface extends JFrame
 
 		// Center frame on screen and tidy up
 		prepareFrame();
+		
 
 	} // END CONSTRUCTOR
 
@@ -123,7 +124,7 @@ public class Interface extends JFrame
 	/**
 	 * Uses CardLayout to toggle between showing the console (during gameplay) and Agent option
 	 * panels (before gameplay). Agent option panels allow users to modify certain traits in regards 
-	 * to cooresponding agents selected via the two ComboBoxes on the right of the frame.
+	 * to corresponding agents selected via the two ComboBoxes on the right of the frame.
 	 * 
 	 * @return		Skinny vertical panel to be placed on left side of frame. Contains console and 
 	 * 				Agent option panels. 
@@ -229,6 +230,7 @@ public class Interface extends JFrame
 				false);
 		((DefaultEditor) scoreToWin.getEditor()).getTextField()
 				.setHorizontalAlignment(JTextField.CENTER);
+		scoreToWin.setValue((int) 10);
 		scoreToWin.setBorder(BorderFactory.createTitledBorder("Score to Win"));
 
 		// NUMBER OF RINGS
@@ -261,6 +263,11 @@ public class Interface extends JFrame
 		return t;
 
 	} // END makeBar()
+	
+	public Board getBoard(){
+		
+		return board;
+	}
 
 
 	public void updatePlayer1Time(long time) {
@@ -282,6 +289,16 @@ public class Interface extends JFrame
 		player2Time.setText(String.format("%2d:%2d:%2d", min, sec, cs));
 
 	} // END updatePlayer2Time()
+	
+	public void updatePlayer1Score(int score){
+		
+		player1Score.setText("" + score);
+	}
+	
+	public void updatePlayer2Score(int score){
+		
+		player2Score.setText("" + score);
+	}
 
 	public void setPrompt(String p) {
 
@@ -291,8 +308,10 @@ public class Interface extends JFrame
 	}
 	
 	public void update(){
-		
+	
+		board.update();
 		board.repaint();
+		
 	}
 
 	//=== OVERRIDES ===
@@ -307,20 +326,31 @@ public class Interface extends JFrame
 		if (e.getActionCommand().equals("start")) {
 			// Starting the game
 
-			// Lock everything
-			board.build((int) rings.getValue());
+			board.build((int) rings.getValue()); // Build board
+			
+			// Set score to win
+			Control.instance.setScoreToWin((int) scoreToWin.getValue());
+			
+			// Lock options down
 			start.setEnabled(false);
 			scoreToWin.setEnabled(false);
 			rings.setEnabled(false);
 			agent1Select.setEnabled(false);
 			agent2Select.setEnabled(false);
-
+			
 			// Show console
 			cards.show(options, "console");
-
-			Control.instance.playGame(
-					agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1), 
-					agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2));
+			
+			Agent play1 = agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
+			Agent play2 = agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
+			
+			
+			new Thread(){
+				public void run(){
+					Control.instance.playGame(play1, play2);
+				}
+			}.start();
+			
 
 		} else if (e.getActionCommand().equals("agent1SelectSelect")) {
 			// Selecting Agent 1, populating its options
