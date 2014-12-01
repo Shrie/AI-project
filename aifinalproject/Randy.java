@@ -1,6 +1,7 @@
 package aifinalproject;
 
 import java.awt.Color;
+import java.awt.GridLayout;
 import java.util.Random;
 
 import javax.swing.BorderFactory;
@@ -18,14 +19,17 @@ public class Randy implements Agent {
 	private char player;
 	private int delay;
 	
+	private JSpinner del;
+	
 	public Randy(){
 		
 		this.player = Control.NONE;
+		this.delay = 100;
 	}
 	
-	public Randy(char player){
+	public Randy(char player, int delay){
 		
-		this.delay = delay * 10;
+		this.delay = delay * 1000;
 		this.player = player;
 	}
 	
@@ -37,7 +41,7 @@ public class Randy implements Agent {
 	@Override
 	public void makeMove() {
 			
-			char[][] ss = Control.stateSpace;
+			char[][] ss = Control.instance.stateSpace;
 			
 			Random r = new Random();
 			
@@ -47,7 +51,7 @@ public class Randy implements Agent {
 				
 				
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(delay);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -58,15 +62,20 @@ public class Randy implements Agent {
 	@Override
 	public JPanel createOptionPane() {
 		
-		JPanel p = new JPanel();
+		JPanel p = new JPanel(new GridLayout(0,1));
 		p.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 		
-		p.add(new JLabel("Randy the Randomizer"));
+		p.add(new JLabel("Randy the Randomizer", JLabel.CENTER));
 		
-		JSpinner delay = new JSpinner();
-		delay.setBorder(BorderFactory.createTitledBorder("Delay"));
+		del = new JSpinner();
+		del.setBorder(BorderFactory.createTitledBorder("Delay (seconds)"));
 		
-		p.add(delay);
+		p.add(new JLabel());
+		
+		p.add(del);
+		p.add(new JLabel());
+		p.add(new JLabel());
+		p.add(new JLabel());
 		
 		return p;
 		
@@ -74,8 +83,8 @@ public class Randy implements Agent {
 
 	@Override
 	public Randy createNew(char team) {
-		
-		return new Randy(team);
+	
+		return new Randy(team, (int) del.getValue());
 	}
 
 }

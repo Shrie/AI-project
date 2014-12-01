@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -80,10 +81,10 @@ public class Board extends JPanel
 		
 		// Print Node States
 		if(rings != 0)
-			for (int i = 0; i < nodes.length; i++)
-				for (int j = 0; j < nodes[i].length; j++) {
+			for(int i = 0; i < nodes.length; i++)
+				for(int j = 0; j < nodes[i].length; j++) {
 					
-					if (nodes[i][j].getTeam() == Control.PLAYER1) {
+					if(nodes[i][j].getTeam() == Control.PLAYER1) {
 						g.drawLine(nodes[i][j].x - 5, nodes[i][j].y - 5,
 								nodes[i][j].x + 5, nodes[i][j].y + 5);
 	
@@ -92,16 +93,14 @@ public class Board extends JPanel
 					}
 					
 					
-					if (nodes[i][j].getTeam() == Control.PLAYER2)
+					if(nodes[i][j].getTeam() == Control.PLAYER2)
 						g.drawOval(nodes[i][j].x - 5, nodes[i][j].y - 5, 10, 10);
 								
-		
-					
 				}	
 				
 	}
 
-	public void draw(Graphics2D g) {
+	public void drawBoard(Graphics2D g) {
 		
 		setBackground(Color.white);
 		
@@ -142,11 +141,11 @@ public class Board extends JPanel
 
 		this.rings = rings;
 		nodes = new Node[rings][12];
-		Control.stateSpace = new char[rings][12];
+		Control.instance.stateSpace = new char[rings][12];
 		
-		for(int i=0; i<Control.stateSpace.length; i++)
-			for(int j=0; j<Control.stateSpace[i].length; j++)
-				Control.stateSpace[i][j] = Control.NONE;
+		for(int i=0; i<Control.instance.stateSpace.length; i++)
+			for(int j=0; j<Control.instance.stateSpace[i].length; j++)
+				Control.instance.stateSpace[i][j] = Control.NONE;
 		
 		initializeNodes((int) (getSize().getWidth() / 2), (int) (getSize()
 				.getHeight() / 2));
@@ -191,29 +190,84 @@ public class Board extends JPanel
 		
 	}
 	
-	public void update(){
+	public void updateNodes(){
 		
 		for(int i=0; i<nodes.length; i++)
-			for(int j=0; j<nodes[i].length; j++)
-				nodes[i][j].setTeam(Control.stateSpace[i][j]);
+			for(int j=0; j<nodes[i].length; j++)				
+				nodes[i][j].setTeam(Control.instance.stateSpace[i][j]);
+				
 		
 	}
 	
 	public void reset(){
 		
-		for(int i=0; i<Control.stateSpace.length; i++)
-			for(int j=0; j<Control.stateSpace[i].length; j++)
-				Control.stateSpace[i][j] = Control.NONE;
+		for(int i=0; i<Control.instance.stateSpace.length; i++)
+			for(int j=0; j<Control.instance.stateSpace[i].length; j++)
+				Control.instance.stateSpace[i][j] = Control.NONE;
 		
-		update();
-				
+		updateNodes();
+		
+		repaint();
 	}
 	
 	public Node[][] getNodes(){
 		
-		update();
+		updateNodes();
 		return nodes;
 	}
+	
+	/**
+	 * Checks i,j coordinates for an invalid move.
+	 * Returns true if location already has been played
+	 * or if there are no played moves adjacent (or diagonal) to
+	 * it. 
+	 * 
+	 * @param i		x-coordinate of matrix interpretation of game board.
+	 * @param j		y-coordinate of matrix intrepretation of game board.
+	 * @return		false if valid move, true if not valid
+	 */
+	private boolean invalidMove(int i, int j) {
+
+		// Check for out-of-bounds indices
+		if (i < 0 || i > Control.instance.stateSpace.length - 1 || j < 0 || j > 11)
+			return true;
+		
+
+		// Check if exact node has already been played
+		if (Control.instance.stateSpace[i][j] != Control.NONE)
+			return true;
+		
+		
+		// Check for any adjacent played nodes
+		return !adjacentPlayed(i, j);
+
+	} // END invalidMove()
+	
+	
+	/**
+	 * Checks if any adjacent node from reference has been played, includes
+	 * check for diagonals.
+	 * 
+	 * @param i		x-coordinate of node in matrix representation of game board.
+	 * @param j		y-coordinate of node in matrix representation of game board.
+	 * @return		true if any node adjacent or immediately diagonal has been played,
+	 * 				false if none have been played yet.
+	 */
+	public boolean adjacentPlayed(int i, int j) {
+
+		updateNodes(); // Sync with stateSpace
+		
+		ArrayList<Node> adj = nodes[i][j].getChildren();
+		
+		for(int k=0; k<adj.size(); k++)
+			if(adj.get(k) != null)
+				if(adj.get(k).getTeam() != Control.NONE)
+					return true;
+			
+				
+		return false;
+
+	} // END adjacentPlayed() 
 
 	//=== OVERRIDES ===
 
@@ -224,7 +278,7 @@ public class Board extends JPanel
 		Graphics2D g2d =  (Graphics2D) g;
 		
 		
-		draw(g2d);
+		drawBoard(g2d);
 		drawNodes(g2d);
 		
 	
@@ -233,20 +287,28 @@ public class Board extends JPanel
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-
+		
+	
 		if((Control.instance.isPlayer1Human && Control.instance.player1Turn)
 				|| (Control.instance.isPlayer2Human && !Control.instance.player1Turn))
-			for (int i = 0; i < nodes.length; i++)
-				for (int j = 0; j < nodes[i].length; j++)
-					if (nodes[i][j].isInRange(e.getX(), e.getY())){
-						
-						if(Control.instance.player1Turn)
-							nodes[i][j].setTeam(Control.PLAYER1);
-						else
-							nodes[i][j].setTeam(Control.PLAYER2);
-						
-						repaint();
-						moveMade = true;
+			for(int i = 0; i < nodes.length; i++)
+				for(int j = 0; j < nodes[i].length; j++)
+					if(nodes[i][j].isInRange(e.getX(), e.getY())){					
+						if(invalidMove(i, j) && !Control.instance.onFirstMove){
+							
+							Control.instance.getInterface().setPrompt("Invalid Move!");
+							
+						}else{
+							
+							if(Control.instance.player1Turn)
+								Control.instance.stateSpace[i][j] = Control.PLAYER1;
+							else
+								Control.instance.stateSpace[i][j] = Control.PLAYER2;
+							
+							updateNodes();
+							repaint();
+							moveMade = true;
+						}
 					}
 
 	}

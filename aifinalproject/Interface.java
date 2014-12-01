@@ -66,7 +66,8 @@ public class Interface extends JFrame
 							
 	private JButton start; // Button to start the game
 	
-	private ArrayList<Agent> agents; // All AI agents
+	private ArrayList<Agent> player1Agents,
+							 player2Agents; // All AI agents
 	// Needed to provide JPanels for Agent options
 	// as well as their names for the ComboBoxes
 
@@ -78,11 +79,12 @@ public class Interface extends JFrame
 	 * @param height	Height of entire frame
 	 * @param agents	List of available agents to choose from
 	 */
-	public Interface(int width, int height, ArrayList<Agent> agents) {
+	public Interface(int width, int height, ArrayList<Agent> agents1, ArrayList<Agent> agents2) {
 		super("ARTIFICIALLY INTELLIGENT TICK TACK TOE");
 		this.width = width;
 		this.height = height;
-		this.agents = agents;
+		this.player1Agents = agents1;
+		this.player2Agents = agents2;
 
 		add(makeConsolePane(), BorderLayout.WEST);		// Left
 		add(board = new Board(), BorderLayout.CENTER);  // Center
@@ -142,11 +144,11 @@ public class Interface extends JFrame
 
 		// Add agent's option panels
 		// Use index values as card 'names'
-		if(agents != null)
-			for(int i = 0; i < agents.size(); i++) {
+		if(player1Agents != null)
+			for(int i = 0; i < player1Agents.size(); i++) {
 				
-				agent1Options.add(agents.get(i).createOptionPane(), "" + i);
-				agent2Options.add(agents.get(i).createOptionPane(), "" + i);
+				agent1Options.add(player1Agents.get(i).createOptionPane(), "" + i);
+				agent2Options.add(player2Agents.get(i).createOptionPane(), "" + i);
 			}
 
 		// Add two option panels to parent panel
@@ -207,12 +209,12 @@ public class Interface extends JFrame
 
 		// AGENT SELECTION
 		// Gather names of agents for ComboBox population
-		String[] agentNames = (agents == null) ? new String[0]
-				: new String[agents.size()];
+		String[] agentNames = (player1Agents == null) ? new String[0]
+				: new String[player1Agents.size()];
 
-		if(agents != null)
-			for(int i = 0; i < agents.size(); i++)
-				agentNames[i] = agents.get(i).getName();
+		if(player1Agents != null)
+			for(int i = 0; i < player1Agents.size(); i++)
+				agentNames[i] = player1Agents.get(i).getName();
 
 		info.add(agent1Select = new JComboBox<String>(agentNames));
 		agent1Select.setBorder(BorderFactory.createTitledBorder("Agent 1"));
@@ -257,7 +259,7 @@ public class Interface extends JFrame
 
 		JToolBar t = new JToolBar();
 		t.setFloatable(false);
-		t.add(prompt = new JLabel());
+		t.add(prompt = new JLabel(" "));
 		t.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 0));
 
 		return t;
@@ -309,7 +311,7 @@ public class Interface extends JFrame
 	
 	public void update(){
 	
-		board.update();
+		board.updateNodes();
 		board.repaint();
 		
 	}
@@ -341,8 +343,8 @@ public class Interface extends JFrame
 			// Show console
 			cards.show(options, "console");
 			
-			Agent play1 = agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
-			Agent play2 = agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
+			Agent play1 = player1Agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
+			Agent play2 = player2Agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
 			
 			
 			new Thread(){

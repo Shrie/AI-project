@@ -17,11 +17,11 @@ public class Control {
 
 	//=== STATIC VARIABLES ===
 	public static Control instance; // Instance of our entire program
-	public static char[][] stateSpace; // Static so it can be accessed easily anywhere
-									   // TODO may make non-static as to follow better programming convention?
+	public char[][] stateSpace; // Static so it can be accessed easily anywhere
 
 	//=== VARIABLES ===
-	private ArrayList<Agent> agents; // List of AI agents (populated manually in constructor)
+	private ArrayList<Agent> agents1,
+							 agents2; // List of AI agents (populated manually in constructor)
 	private Interface gui;			 // Instance of GUI
 
 	public boolean player1Turn,    // Flip-flops between player turns
@@ -33,9 +33,6 @@ public class Control {
 	
 	private long time1, // Player 1 time in 1/60th seconds
 				 time2; // Player 2 time in 1/60th seconds
-
-	private Agent player1,
-				  player2;
 	
 	private int scoreToWin,
 				player1Score,
@@ -45,18 +42,22 @@ public class Control {
 	public Control() {
 
 		//Agent list initialization
-		agents = new ArrayList<Agent>(); 
+		agents1 = new ArrayList<Agent>(); 
+		agents2 = new ArrayList<Agent>();
 		
 		// TODO ADD NEW AGENTS HERE
 		// Have one constructor that has no parameters to work as a 
 		// somewhat 'generic' instance which is only used to populate the
 		// option pane and name for the ComboBox
-		agents.add(new Human());
-		agents.add(new Randy());
+		agents1.add(new Human());
+		agents1.add(new Randy());
+		
+		agents2.add(new Human());
+		agents2.add(new Randy());
 		// TODO
 		
 		// Initialize GUI
-		gui = new Interface(800, 500, agents);
+		gui = new Interface(800, 500, agents1, agents2);
 
 		// Timer initialization
 		time1 = 0;
@@ -76,6 +77,10 @@ public class Control {
 	} // END CONSTRUCTOR
 
 	//=== METHODS ===
+	
+	public Interface getInterface(){
+		return gui;
+	}
 	
 	public void setScoreToWin(int score){
 		
@@ -111,83 +116,9 @@ public class Control {
 		
 	} // END createTimer();
 	
-	/**
-	 * Checks i,j coordinates for an invalid move.
-	 * Returns true if location already has been played
-	 * or if there are no played moves adjacent (or diagonal) to
-	 * it. 
-	 * 
-	 * @param i		x-coordinate of matrix interpretation of game board.
-	 * @param j		y-coordinate of matrix intrepretation of game board.
-	 * @return		false if valid move, true if not valid
-	 */
-	private boolean invalidMove(int i, int j) {
 
-		// Check for out-of-bounds indices
-		if (i < 0 || i > stateSpace.length - 1 || j < 0 || j > 11)
-			return true;
-
-		// Check if exact node has already been played
-		if (stateSpace[i][j] != NONE)
-			return true;
-
-		// Check for any adjacent played nodes
-		return !adjacentPlayed(i, j);
-
-	} // END invalidMove()
 	
-	/**
-	 * Checks if any adjacent node from reference has been played, includes
-	 * check for diagonals.
-	 * 
-	 * @param i		x-coordinate of node in matrix representation of game board.
-	 * @param j		y-coordinate of node in matrix representation of game board.
-	 * @return		true if any node adjacent or immediately diagonal has been played,
-	 * 				false if none have been played yet.
-	 */
-	public boolean adjacentPlayed(int i, int j) {
-
-		// Check top row
-		if (i > 0) {
-			if (j > 0) {
-				if (stateSpace[i - 1][j - 1] != NONE
-						|| stateSpace[i - 1][j] != NONE
-						|| stateSpace[i - 1][(j + 1) % 12] != NONE)
-					return true;
-
-			} else if (stateSpace[i - 1][11] != NONE
-					|| stateSpace[i - 1][0] != NONE
-					|| stateSpace[i - 1][1] != NONE)
-				return true;
-		}
-
-		// Check bottom row
-		if (i < stateSpace.length - 1) {
-			if (j > 0) {
-				if (stateSpace[i + 1][j - 1] != NONE
-						|| stateSpace[i + 1][j] != NONE
-						|| stateSpace[i + 1][(j + 1) % 12] != NONE)
-					return true;
-
-			} else if (stateSpace[i + 1][11] != NONE
-					|| stateSpace[i + 1][0] != NONE
-					|| stateSpace[i + 1][1] != NONE)
-				return true;
-
-		}
-
-		// Check sides
-		if (j > 0) {
-			if (stateSpace[i][j - 1] != NONE
-					|| stateSpace[i][(j + 1) % 12] != NONE)
-				return true;
-
-		} else if (stateSpace[i][11] != NONE || stateSpace[i][1] != NONE)
-			return true;
-
-		return false;
-
-	} // END adjacentPlayed() 
+	
 
 	/**
 	 * Game loop found here. Keeps calling agents makeMove() until
@@ -231,7 +162,6 @@ public class Control {
 			
 		}
 		
-		player1Turn = false;		// Player 2 turn
 		onFirstMove = false;		// No longer first turn
 			
 	
@@ -241,7 +171,7 @@ public class Control {
 		
 			winCheck(); // Checks Player 1's move
 			
-			
+			player1Turn = false;	
 			gui.setPrompt("Player 2, Your Turn!");
 			agent2.makeMove();
 			
@@ -260,11 +190,10 @@ public class Control {
 			}
 			
 			gui.update();
-			player1Turn = true;
 			winCheck(); // Checks Player 2's move
 			
 			
-			
+			player1Turn = true;
 			gui.setPrompt("Player 1, Your Turn!");
 			agent1.makeMove();
 			
@@ -285,7 +214,7 @@ public class Control {
 			}
 			
 			gui.update();
-			player1Turn = false;	
+			
 		}
 		
 
@@ -311,13 +240,23 @@ public class Control {
 						gui.updatePlayer2Score(++player2Score);
 					
 					Interface.print("Win Found");
-					gui.getBoard().reset(); // Does not work??
+					onFirstMove = true;
+					player1Turn = true;
+					gui.getBoard().reset();
 					return;
 					
-					//TODO Somehow reset and update the board visually
 				}
 			
 	} // END winCheck()
+	
+	public void printSS(){
+		
+		for(int i=0; i<stateSpace.length; i++){
+			for(int j=0; j<12; j++)
+				System.out.print("[" + stateSpace[i][j] + "]");
+			System.out.println();
+		}
+	}
 
 	
 	//=== STATIC METHODS ===
@@ -331,13 +270,6 @@ public class Control {
 
 	}
 	
-	public static void printSS(){
-		
-		for(int i=0; i<stateSpace.length; i++){
-			for(int j=0; j<12; j++)
-				System.out.print("[" + stateSpace[i][j] + "]");
-			System.out.println();
-		}
-	}
+
 
 } // END CONTROL

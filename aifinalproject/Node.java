@@ -37,9 +37,14 @@ public class Node {
 
 	public void setTeam(char x) {
 
-		if (x == Control.PLAYER1 || x == Control.PLAYER2)
-			this.team = x;
+		if (x == Control.PLAYER1 || x == Control.PLAYER2 || x == Control.NONE)
+			team = x;
 
+	}
+	
+	
+	public ArrayList<Node> getChildren(){
+		return children;
 	}
 	
 	//=== ADD CHILDREN ===
@@ -109,7 +114,11 @@ public class Node {
 	}
 	
 	
-	
+	/**
+	 * Checks all nodes relative to it, up to two spaces away to check for a win.
+	 * 
+	 * @return		true if a winning sequence relative to node, false if no winning sequence can be found.
+	 */
 	public boolean winFound(){
 		
 		if(this.team == Control.NONE)
@@ -124,7 +133,7 @@ public class Node {
 			
 		}catch(NullPointerException e){}
 		
-		// CHECK HORIZONTAL WIN
+		// CHECK HORIZONTAL WIN 
 		try{
 			if(this.team == this.getLeft().getLeft().getTeam()
 					&& this.team == this.getLeft().getTeam()
@@ -159,7 +168,8 @@ public class Node {
 		
 		if(!children.isEmpty())
 			for(int i=0; i<children.size(); i++)
-				Interface.print(String.format("N%d: %c", i, children.get(i).getTeam()));
+				if(children.get(i) != null)
+					Interface.print(String.format("N%d: %c", i, children.get(i).getTeam()));
 		
 	}
 
