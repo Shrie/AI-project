@@ -10,25 +10,18 @@ import javax.swing.JPanel;
 /**
  * Used to designate Human players as well as provide a place to 
  * create options. 
+ * 
+ * Most overrides aren't really used. 
  */
 public class Human implements Agent {
 
-	private char team;
+	//=== CONSTRUCTOR ===
+	public Human(){}
 	
-	public Human(){
-		
-		this.team = Control.NONE;
-	}
-	
-	public Human(char team){
-		
-		this.team = team;
-	}
-	
-	
-	
+	//=== OVERRIDES ===
 	@Override
 	public String getName() {
+		
 		return "Human";
 	}
 
@@ -62,7 +55,7 @@ public class Human implements Agent {
 	@Override
 	public Human createNew(char team) {
 		
-		return new Human(team);
+		return new Human();
 	}
 
-}
+}// END HUMAN

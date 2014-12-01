@@ -27,10 +27,11 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.SpinnerNumberModel;
 
 /**
- * Manages the graphical interface. 
+ * Manages the graphical interface.
+ * Extends JFrame. 
  */
 public class Interface extends JFrame 
 					   implements ActionListener {
@@ -53,9 +54,8 @@ public class Interface extends JFrame
 
 	private JTextField player1Score, // Number of games won by player 1
 					   player2Score; // Number of games won by player 2
-		//TODO keep track of number of draws somewhere?
 
-	private JPanel options, // Parent panel contains console and agent options
+	private JPanel options, 	  // Parent panel contains console and agent options
 				   agent1Options, // Panel where options can be changed for agent 1
 				   agent2Options; // Panel where options can be changed for agent 2
 
@@ -66,10 +66,10 @@ public class Interface extends JFrame
 							
 	private JButton start; // Button to start the game
 	
-	private ArrayList<Agent> player1Agents,
-							 player2Agents; // All AI agents
-	// Needed to provide JPanels for Agent options
-	// as well as their names for the ComboBoxes
+	private ArrayList<Agent> player1Agents, // All available agents for player 1
+							 player2Agents; // All available agents for player 2
+											// Needed to provide JPanels for Agent options
+											// as well as their names for the ComboBoxes
 
 	//=== CONSTRUCTOR ===
 	/**
@@ -77,15 +77,19 @@ public class Interface extends JFrame
 	 * 
 	 * @param width		Width of entire frame
 	 * @param height	Height of entire frame
-	 * @param agents	List of available agents to choose from
+	 * @param agents1	List of available agents for Player 1 to choose from
+	 * @param agents2	List of availible agents for Player 3 to choose from
 	 */
 	public Interface(int width, int height, ArrayList<Agent> agents1, ArrayList<Agent> agents2) {
-		super("ARTIFICIALLY INTELLIGENT TICK TACK TOE");
+		super("ARTIFICIALLY INTELLIGENT TICK TACK TOE"); // Frame title
+		
+		//Initialize variables
 		this.width = width;
 		this.height = height;
 		this.player1Agents = agents1;
 		this.player2Agents = agents2;
 
+		//Build Interface
 		add(makeConsolePane(), BorderLayout.WEST);		// Left
 		add(board = new Board(), BorderLayout.CENTER);  // Center
 		add(makeInfoPanel(), BorderLayout.EAST);		// Right
@@ -94,10 +98,20 @@ public class Interface extends JFrame
 		// Center frame on screen and tidy up
 		prepareFrame();
 		
-
 	} // END CONSTRUCTOR
 
+	
 	//=== METHODS ===
+	/**
+	 * 
+	 * @return	The game board used.
+	 */
+	public Board getBoard(){
+		
+		return board;
+	}
+	
+	//=== GUI INITIALIZATION ===
 	/**
 	 * Creates and centers frame on screen.
 	 */
@@ -133,10 +147,10 @@ public class Interface extends JFrame
 	 */
 	private JPanel makeConsolePane() {
 
-		options = new JPanel(new CardLayout()); // JPanel to return
-		options.setPreferredSize(new Dimension((width - height + 20) / 2, height));
+		options = new JPanel(new CardLayout()); // JPanel which houses console and Agent options
+		options.setPreferredSize(new Dimension((width - height + 20) / 2, height)); // Size up
 
-		//- Agent Option Panels
+		//=== AGENT OPTION PANELS ====
 		JPanel agentOptions = new JPanel(new GridLayout(0, 1));
 
 		agent1Options = new JPanel(new CardLayout()); // Top Panel
@@ -147,7 +161,8 @@ public class Interface extends JFrame
 		if(player1Agents != null)
 			for(int i = 0; i < player1Agents.size(); i++) {
 				
-				agent1Options.add(player1Agents.get(i).createOptionPane(), "" + i);
+				//Populate card layout for agent option panes.
+				agent1Options.add(player1Agents.get(i).createOptionPane(), "" + i); 
 				agent2Options.add(player2Agents.get(i).createOptionPane(), "" + i);
 			}
 
@@ -158,9 +173,9 @@ public class Interface extends JFrame
 		// Add to grandparent panel
 		options.add(agentOptions, "options");
 
-		//- Console
+		//=== CONSOLE ===
 		JPanel consolePane = new JPanel(new BorderLayout());
-		JScrollPane pane;
+		JScrollPane pane; // Scroll pane for Console
 		consolePane.add(pane = new JScrollPane(console = new JTextArea()), BorderLayout.CENTER);
 		
 		// Remove ScrollPane's horizontal bar (because it's ugly for a console)
@@ -177,14 +192,14 @@ public class Interface extends JFrame
 	 * Info panel contains information like player scores, elapsed time, as well as pre-game
 	 * options like agent selection, ring selection, and score to win.
 	 * 
-	 * @return		JPanel with information and options.
+	 * @return		JPanel with real-time information and pre-game options.
 	 */
 	private JPanel makeInfoPanel() {
 
 		// Left Panel
 		JPanel info = new JPanel(new GridLayout(0, 1));
 		info.setPreferredSize(new Dimension((width - height - 30) / 2, height));
-		info.add(new JLabel(""));
+		info.add(new JLabel("")); // Spcae
 		info.add(new JLabel("Score", JLabel.CENTER));
 
 		JPanel m = new JPanel(new GridLayout());
@@ -197,7 +212,6 @@ public class Interface extends JFrame
 		info.add(m);
 
 		// ELAPSED TIME TEAM COUNTERS
-
 		JPanel n = new JPanel(new GridLayout());
 		n.add(player1Time = new JLabel("00:00:00", JLabel.CENTER));
 		player1Time.setFont(new Font("Courier New", Font.BOLD, 12));
@@ -217,33 +231,31 @@ public class Interface extends JFrame
 				agentNames[i] = player1Agents.get(i).getName();
 
 		info.add(agent1Select = new JComboBox<String>(agentNames));
-		agent1Select.setBorder(BorderFactory.createTitledBorder("Agent 1"));
+		agent1Select.setBorder(BorderFactory.createTitledBorder("Player 1"));
 		agent1Select.setActionCommand("agent1SelectSelect");
-		agent1Select.addActionListener(this);
+		agent1Select.addActionListener(this); // Action Listener for populating agent options
 
 		info.add(agent2Select = new JComboBox<String>(agentNames));
-		agent2Select.setBorder(BorderFactory.createTitledBorder("Agent 2"));
+		agent2Select.setBorder(BorderFactory.createTitledBorder("Player 2"));
 		agent2Select.setActionCommand("agent2SelectSelect");
 		agent2Select.addActionListener(this);
 
 		// SCORE TO WIN SPINNER
-		info.add(scoreToWin = new JSpinner());
-		((DefaultEditor) scoreToWin.getEditor()).getTextField().setEditable(
-				false);
+		info.add(scoreToWin = new JSpinner(new SpinnerNumberModel(10, 1, 1000000, 1)));
 		((DefaultEditor) scoreToWin.getEditor()).getTextField()
 				.setHorizontalAlignment(JTextField.CENTER);
 		scoreToWin.setValue((int) 10);
 		scoreToWin.setBorder(BorderFactory.createTitledBorder("Score to Win"));
 
 		// NUMBER OF RINGS
-		info.add(rings = new JSpinner());
+		info.add(rings = new JSpinner(new SpinnerNumberModel(5, 1, 25, 1)));
 		((DefaultEditor) rings.getEditor()).getTextField().setEditable(false);
 		((DefaultEditor) rings.getEditor()).getTextField()
 				.setHorizontalAlignment(JTextField.CENTER);
 		rings.setValue((int) 5);
 		rings.setBorder(BorderFactory.createTitledBorder("Number of Rings"));
 
-		info.add(new JLabel(""));
+		info.add(new JLabel("")); //Space
 
 		info.add(start = new JButton("Start!"));
 		start.setBackground(Color.gray);
@@ -255,6 +267,11 @@ public class Interface extends JFrame
 
 	} // END makeInfoPanel()
 
+	/**
+	 * Contains only one element, a JLabel to be used as a user prompt.
+	 * 
+	 * @return	JToolBar to function as a user prompt.
+	 */
 	private JToolBar makeBar() {
 
 		JToolBar t = new JToolBar();
@@ -266,12 +283,13 @@ public class Interface extends JFrame
 
 	} // END makeBar()
 	
-	public Board getBoard(){
-		
-		return board;
-	}
-
-
+	
+	//=== GUI UPDATE METHODS ===
+	/**
+	 * Updates the elapsed time label for Player 1.
+	 * 
+	 * @param time	Elapsed time in sixitiths of a second.
+	 */
 	public void updatePlayer1Time(long time) {
 
 		int cs = (int) time % 60;
@@ -282,6 +300,11 @@ public class Interface extends JFrame
 
 	} // END updatePlayer1Time()
 
+	/**
+	 * Updates the elapsed time label for Player 2.
+	 * 
+	 * @param time	Elapsed time in sixitiths of a second.
+	 */
 	public void updatePlayer2Time(long time) {
 
 		int cs = (int) time % 60;
@@ -292,27 +315,45 @@ public class Interface extends JFrame
 
 	} // END updatePlayer2Time()
 	
+	/**
+	 * Updates JLabel displaying Player 1's score.
+	 * 
+	 * @param score		Player 1 score.
+	 */
 	public void updatePlayer1Score(int score){
 		
 		player1Score.setText("" + score);
 	}
 	
+	/**
+	 * Updates JLabel for displaying Player 2's score.
+	 * 
+	 * @param score		Player 2 score.
+	 */
 	public void updatePlayer2Score(int score){
 		
 		player2Score.setText("" + score);
 	}
 
-	public void setPrompt(String p) {
+	/**
+	 * Sets text in bottom toolbar/prompt.
+	 * 
+	 * TODO Incorporate sounds?
+	 * 
+	 * @param text	Text to replace in prompt.
+	 */
+	public void setPrompt(String text) {
 
-		prompt.setText(p);
-		//TODO incorporate a sound?
-
+		prompt.setText(text);
 	}
 	
+	/**
+	 * Syncs board Nodes with current stateSpace and repaints the board.
+	 */
 	public void update(){
 	
-		board.updateNodes();
-		board.repaint();
+		board.updateNodes(); // Sync nodes with stateSpace
+		board.repaint();	
 		
 	}
 
@@ -343,10 +384,11 @@ public class Interface extends JFrame
 			// Show console
 			cards.show(options, "console");
 			
+			// Create new Agents to start playing
 			Agent play1 = player1Agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
 			Agent play2 = player2Agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
 			
-			
+			//=== START GAME THREAD ===
 			new Thread(){
 				public void run(){
 					Control.instance.playGame(play1, play2);
@@ -369,13 +411,22 @@ public class Interface extends JFrame
 	} // END actionPreformed()
 
 	//=== STATIC METHODS ===
+	/**
+	 * Prints to the console
+	 * 
+	 * TODO make text wrap somehow so it doesn't run off the edge of the textarea.
+	 * 
+	 * @param s		Text to append to the console.
+	 */
 	public static void print(String s) {
 
 		console.append(s + "\n");
-		//TODO make text wrap somehow so it doesn't run off the edge of the textarea
 
 	}
 
+	/**
+	 * Clears the console.
+	 */
 	public static void clear() {
 
 		console.setText("");
