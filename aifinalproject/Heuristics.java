@@ -1,7 +1,6 @@
 package aifinalproject;
 
 import java.awt.GridLayout;
-import java.util.ArrayList;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -30,8 +29,10 @@ public class Heuristics implements Agent {
      * @param board 2d char array representing board and moves
      * @return	TODO
      */
-    public int heuristic1(char player, char[][] board) {
+    public int heuristic1(char player, StateSpace ss) {
 
+    	char[][] board = ss.getCharStateSpace();
+    	
         int rows = board.length;
         int cols = board[0].length;
         int score1 = 0;
@@ -262,8 +263,27 @@ public class Heuristics implements Agent {
     @Override
     public void makeMove() {
 
-
-
+    	StateSpace ss = Control.instance.stateSpace; // Grab current statespace
+    	ss.expandStateSpace(1);						 // Enumerate all possibilities for the agent
+    	
+    	StateSpace best = ss.getChildren().get(0); // To avoid returning NULL if no better state is found
+    	int bestH = 0;
+    	
+    	for(int i=0; i<ss.getChildren().size(); i++){ // For all possibilities
+    		
+    		int h = heuristic1(this.player, ss.getChildren().get(i)); // Apply the heurisitic to the state
+    		
+    		if( h > bestH){	// If this state is better than what we currently have, store it
+    			
+    			bestH = h;
+    			best = ss.getChildren().get(i);
+    		}
+    		
+    	}
+    		
+    
+    	Control.instance.stateSpace = best; // Finalize move
+    	
     }
 
     @Override
@@ -272,6 +292,10 @@ public class Heuristics implements Agent {
         JPanel p = new JPanel(new GridLayout(0, 1));
         p.add(new JLabel("Various Heuristics", JLabel.CENTER));
 
+        p.add(new JLabel());
+        p.add(new JLabel());
+        p.add(new JLabel());
+        
         return p;
     }
 

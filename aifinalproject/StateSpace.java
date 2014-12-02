@@ -74,7 +74,7 @@ public class StateSpace {
 		
 		for(int i=0; i<state.length; i++)			
 			for(int j=0; j<state[i].length; j++)
-				n[i][j] =  new Node(state[i][j].getTeam(), i, j);
+				n[i][j] =  new Node(state[i][j].getTeam(), state[i][j].x, state[i][j].y, i, j);
 			
 		
 		return new StateSpace(n);
@@ -90,7 +90,7 @@ public class StateSpace {
 	
 	/**
 	 * Sets all Node teams to NONE.
-	 * Sets children to NULL.
+	 * Sets children to new empty ArrayList.
 	 */
 	public void reset(){
 		
@@ -99,7 +99,7 @@ public class StateSpace {
 				for(int j=0; j<state[i].length; j++)
 					state[i][j].setTeam(Control.NONE);
 		
-		this.children = null;
+		this.children = new ArrayList<StateSpace>();
 	}
 	
 	/**

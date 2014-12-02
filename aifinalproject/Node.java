@@ -26,18 +26,19 @@ public class Node {
 	/**
 	 * Constructor to be used in conjunction with the Board due to the x, y parameters.
 	 * 
+	 * @param team	Char representation of team.
 	 * @param x		X-Coordinate of Node on game board
 	 * @param y		Y-Coordinate of Node on game board
 	 * @param i		First index of matrix representation (Ring placement)
 	 * @param j		Second index of matrix representation (Where in the ring)
 	 */
-	public Node(int x, int y, int i, int j) {
+	public Node(char team, int x, int y, int i, int j) {
 
 		this.x = x;
 		this.y = y;
 		this.i = i;
 		this.j = j;
-		this.team = Control.NONE; // Initially set to NONE
+		this.team = team;
 		this.children = new ArrayList<Node>(8);
 		
 		// Initialize Nodes
