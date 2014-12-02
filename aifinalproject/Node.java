@@ -14,8 +14,11 @@ public class Node {
 	private char team;					// Character representation of team, usually X or O
 	private ArrayList<Node> children;   // All adjacent nodes
 
+	private int i;	// First index of node in double array
+	private int j;  // Second inded of node in double array
+	
 	public int x;	// X-Coordinate of node on game board
-	public int y;   // Y-Coordiatte of node on game board
+	public int y;   // Y-Coordinate of node on game board
 
 	private int clickTolerance = 10;
 	
@@ -26,16 +29,28 @@ public class Node {
 	 * @param x		X-Coordinate of Node on game board
 	 * @param y		Y-Coordinate of Node on game board
 	 */
-	public Node(int x, int y) {
+	public Node(int x, int y, int i, int j) {
 
 		this.x = x;
 		this.y = y;
+		this.i = i;
+		this.j = j;
 		this.team = Control.NONE; // Initially set to NONE
 		this.children = new ArrayList<Node>(8);
 		
 		// Initialize Nodes
-		for(int i=0; i<8; i++)
+		for(int k=0; k<8; k++)
 			this.children.add(null);
+	}
+	
+	public int getIIndex(){
+		
+		return i;
+	}
+	
+	public int getJIndex(){
+		
+		return j;
 	}
 
 	/**

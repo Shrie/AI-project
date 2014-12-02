@@ -53,9 +53,11 @@ public class Control {
 		// option pane and name for the ComboBox
 		agents1.add(new Human());
 		agents1.add(new Randy());
+		agents1.add(new Heuristics());
 		
 		agents2.add(new Human());
 		agents2.add(new Randy());
+		agents2.add(new Heuristics());
 		
 		// Initialize GUI
 		gui = new Interface(800, 500, agents1, agents2);
@@ -77,6 +79,18 @@ public class Control {
 	} // END CONSTRUCTOR
 
 	//=== METHODS ===
+	public char[][] getCopyOfStateSpace(){
+		
+		char[][] ss = new char[stateSpace.length][12];
+		
+		for(int i=0; i<ss.length; i++)
+			for(int j=0; j<ss[i].length; j++)
+				ss[i][j] = stateSpace[i][j];
+		
+		return ss;
+		
+	}
+	
 	/**
 	 * 
 	 * @return		The GUI Interface
@@ -281,80 +295,6 @@ public class Control {
 			
 	} // END winCheck()
 	
-	/**
-	 * TODO
-	 * 
-	 * @param player	Player character, either PLAYER1 or PLAYER2
-	 * @return			TODO
-	 */
-	public int heuristic(char player) {
-			
-		char[][] board = stateSpace;
-	
-		int rows = board.length;
-		int cols = board[0].length;
-		int score1 = 0;
-		int score2 = 0;
-		char p1 = 'X';
-		char p2 = 'O';
-		
-		for (int row = 0; row < rows; row++) {
-			char prev = '-';
-			char curr = '-';
-			
-			for (int col = 0; col <= cols; col++) {
-				curr = board[row][col%cols];
-				if ((curr == prev) && (curr == p2)) {
-					score1++;
-				} else if ((curr == prev) && (curr == p1)) {
-					score2++;
-				}
-			}
-			
-			prev = curr;
-		}
-		
-		for (int col = 0; col <= cols; col++) {
-			char prev = '-';
-			char curr = '-';
-			
-			for (int row = 0; row < rows; row++) {
-				curr = board[row][col%cols];
-				if ((curr == prev) && (curr == p1)) {
-					score1++;
-				} else if ((curr == prev) && (curr == p2)) {
-					score2++;
-				}
-			}
-		}
-		
-		for (int row = 0; row < rows; row++) {
-			char curr = '-';
-			
-			for (int col = 0; col < cols; col++) {
-				curr = board[row][col%cols];
-				char l = board[row+1][(col-1+cols)%cols];
-				char r = board[row+1][(col+1+cols)%cols];
-				if ((curr == l) && (curr == p1)) {
-					score1++;
-				} else if ((curr == l) && (curr == p2)) {
-					score2++;
-				}
-				
-				if ((curr == r) && (curr == p1)) {
-					score1++;
-				} else if ((curr == r) && (curr == p2)) {
-					score2++;
-				}
-			}
-		}
-		
-		if (player == p1) {
-			return score1-score2;
-		} else
-			return score2-score1;
-			
-	}// END heuristic()
 
 	
 	/**

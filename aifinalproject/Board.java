@@ -81,24 +81,24 @@ public class Board extends JPanel
 			int trigHeight = (int) ((Math.sin(Math.PI / 6) * base)) - 1;
 
 			// Quad 1
-			nodes[i][0] = new Node(x, y - base); // Most top
-			nodes[i][1] = new Node(x + trigHeight, y - trigBase);
-			nodes[i][2] = new Node(x + trigBase, y - trigHeight);
+			nodes[i][0] = new Node(x, y - base, i, 0); // Most top
+			nodes[i][1] = new Node(x + trigHeight, y - trigBase, i, 1);
+			nodes[i][2] = new Node(x + trigBase, y - trigHeight, i, 2);
 
 			// Quad 2
-			nodes[i][3] = new Node(x + base, y);
-			nodes[i][4] = new Node(x + trigBase, y + trigHeight);
-			nodes[i][5] = new Node(x + trigHeight, y + trigBase);
+			nodes[i][3] = new Node(x + base, y, i, 3);
+			nodes[i][4] = new Node(x + trigBase, y + trigHeight, i, 4);
+			nodes[i][5] = new Node(x + trigHeight, y + trigBase, i, 5);
 
 			// Quad 3
-			nodes[i][6] = new Node(x, y + base); // Most bottom
-			nodes[i][7] = new Node(x - trigHeight, y + trigBase);
-			nodes[i][8] = new Node(x - trigBase, y + trigHeight);
+			nodes[i][6] = new Node(x, y + base, i, 6); // Most bottom
+			nodes[i][7] = new Node(x - trigHeight, y + trigBase, i, 7);
+			nodes[i][8] = new Node(x - trigBase, y + trigHeight, i, 8);
 
 			// Quad 4
-			nodes[i][9] = new Node(x - base, y);
-			nodes[i][10] = new Node(x - trigBase, y - trigHeight);
-			nodes[i][11] = new Node(x - trigHeight, y - trigBase);
+			nodes[i][9] = new Node(x - base, y, i, 9);
+			nodes[i][10] = new Node(x - trigBase, y - trigHeight, i, 10);
+			nodes[i][11] = new Node(x - trigHeight, y - trigBase, i, 11);
 
 		}
 

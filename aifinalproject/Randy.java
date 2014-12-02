@@ -9,6 +9,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.JSpinner.DefaultEditor;
 
 /**
  * A dummy agent which will select a random, valid node. 
@@ -40,7 +43,7 @@ public class Randy implements Agent {
 	 * Intended for actual Agent gameplay.
 	 * 
 	 * @param player	Team character, usually X or O
-	 * @param delay		Seconds to delay a move decsion.
+	 * @param delay		Seconds to delay a move decision.
 	 */
 	public Randy(char player, int delay, boolean legalMoves){
 		
@@ -103,8 +106,11 @@ public class Randy implements Agent {
 		
 		p.add(new JLabel("Randy the Randomizer", JLabel.CENTER));
 		
-		del = new JSpinner();
+		del = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 		del.setBorder(BorderFactory.createTitledBorder("Delay (seconds)"));
+		((DefaultEditor) del.getEditor()).getTextField()
+			.setHorizontalAlignment(JTextField.CENTER);
+		((DefaultEditor) del.getEditor()).getTextField().setEditable(false);
 		
 		p.add(new JLabel());
 		

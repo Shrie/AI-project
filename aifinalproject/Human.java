@@ -37,6 +37,7 @@ public class Human implements Agent {
 		
 		JPanel p = new JPanel(); // Panel to return
 		
+		p.add(new JLabel());
 		p.add(new JLabel("Human Options"));
 		p.setBorder(BorderFactory.createLineBorder(Color.orange));
 		
