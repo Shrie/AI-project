@@ -252,7 +252,7 @@ public class Interface extends JFrame
 		((DefaultEditor) rings.getEditor()).getTextField().setEditable(false);
 		((DefaultEditor) rings.getEditor()).getTextField()
 				.setHorizontalAlignment(JTextField.CENTER);
-		rings.setValue((int) 5);
+		rings.setValue((int) 4);
 		rings.setBorder(BorderFactory.createTitledBorder("Number of Rings"));
 
 		info.add(new JLabel("")); //Space
@@ -385,8 +385,8 @@ public class Interface extends JFrame
 			cards.show(options, "console");
 			
 			// Create new Agents to start playing
-			Agent play1 = player1Agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
-			Agent play2 = player2Agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
+			final Agent play1 = player1Agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
+			final Agent play2 = player2Agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
 			
 			//=== START GAME THREAD ===
 			new Thread(){
