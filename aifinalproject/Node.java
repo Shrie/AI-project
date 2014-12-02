@@ -9,25 +9,27 @@ import java.util.ArrayList;
  *  currently used for win-checking.
  */
 public class Node {
-
+	
 	//=== VARIABLES ===
 	private char team;					// Character representation of team, usually X or O
 	private ArrayList<Node> children;   // All adjacent nodes
 
-	private int i;	// First index of node in double array
-	private int j;  // Second inded of node in double array
+	public int i;	// First index of node in double array
+	public int j;  // Second index of node in double array
 	
 	public int x;	// X-Coordinate of node on game board
 	public int y;   // Y-Coordinate of node on game board
 
 	private int clickTolerance = 10;
 	
-	//== CONSTRUCTOR ===
+	//== CONSTRUCTORS ===
 	/**
-	 * Only constructor.
+	 * Constructor to be used in conjunction with the Board due to the x, y parameters.
 	 * 
 	 * @param x		X-Coordinate of Node on game board
 	 * @param y		Y-Coordinate of Node on game board
+	 * @param i		First index of matrix representation (Ring placement)
+	 * @param j		Second index of matrix representation (Where in the ring)
 	 */
 	public Node(int x, int y, int i, int j) {
 
@@ -43,15 +45,25 @@ public class Node {
 			this.children.add(null);
 	}
 	
-	public int getIIndex(){
+	/**
+	 * Constructor to be used when a generic node is needed to make a graph.
+	 * 
+	 * @param i
+	 * @param j
+	 */
+	public Node(char team, int i, int j){
 		
-		return i;
+		this.team = team;
+		this.i = i;
+		this.j = j;
+		this.children = new ArrayList<Node>(8);
+		
+		// Initialize Nodes
+		for(int k=0; k<8; k++)
+			this.children.add(null);
 	}
 	
-	public int getJIndex(){
-		
-		return j;
-	}
+	//=== METHODS ===
 
 	/**
 	 * Checks to see if click is within range of a node.
@@ -167,22 +179,28 @@ public class Node {
 	/**
 	 * Checks all nodes relative to it, up to two spaces away to check for a win.
 	 * 
-	 * TODO return a number to explain which test (vertical, horizonal, left diag, etc) to be able to map 
-	 * which nodes are in a winning sequence
-	 * 
-	 * @return		true if a winning sequence relative to node, false if no winning sequence can be found.
+	 * @return		ArrayList with all nodes responsible for win. Empty ArrayList if no win is present.
 	 */
-	public boolean winFound(){
+	public ArrayList<Node> winSequence(){
+		
+		ArrayList<Node> winSequence = new ArrayList<Node>();
 		
 		if(this.team == Control.NONE)
-			return false;
+			return winSequence;
 		
 		// CHECK VERTICAL WIN
 		try{
 			if(this.team == this.getTop().getTop().getTeam() 
 					&& this.team == this.getTop().getTeam()
-					&& this.team == this.getBottom().getTeam())
-				return true;
+					&& this.team == this.getBottom().getTeam()){
+				
+				winSequence.add(this.getTop().getTop());
+				winSequence.add(this.getTop());
+				winSequence.add(this);
+				winSequence.add(this.getBottom());
+				
+				return winSequence;
+			}
 			
 		}catch(NullPointerException e){}
 		
@@ -190,8 +208,15 @@ public class Node {
 		try{
 			if(this.team == this.getLeft().getLeft().getTeam()
 					&& this.team == this.getLeft().getTeam()
-					&& this.team == this.getRight().getTeam())
-				return true;
+					&& this.team == this.getRight().getTeam()){
+				
+				winSequence.add(this.getLeft().getLeft());
+				winSequence.add(this.getLeft());
+				winSequence.add(this);
+				winSequence.add(this.getRight());
+				
+				return winSequence;
+			}
 			
 		}catch(NullPointerException e){}
 		
@@ -199,8 +224,15 @@ public class Node {
 		try{
 			if(this.team == this.getTopLeft().getTopLeft().getTeam()
 					&& this.team == this.getTopLeft().getTeam()
-					&& this.team == this.getBottomRight().getTeam())
-				return true;
+					&& this.team == this.getBottomRight().getTeam()){
+				
+				winSequence.add(this.getTopLeft().getTopLeft());
+				winSequence.add(this.getTopLeft());
+				winSequence.add(this);
+				winSequence.add(this.getBottomRight());
+				
+				return winSequence;
+			}
 			
 		}catch(NullPointerException e){}
 		
@@ -208,12 +240,20 @@ public class Node {
 		try{
 			if(this.team == this.getTopRight().getTopRight().getTeam()
 					&& this.team == this.getTopRight().getTeam()
-					&& this.team == this.getBottomLeft().getTeam())
-				return true;
+					&& this.team == this.getBottomLeft().getTeam()){
+				
+				winSequence.add(this.getTopRight().getTopRight());
+				winSequence.add(this.getTopRight());
+				winSequence.add(this);
+				winSequence.add(this.getBottomLeft());
+				
+				return winSequence;
+			}
 			
 		}catch(NullPointerException e){}
 		
-		return false;
+		
+		return winSequence; // empty
 		
 	}// END winFound()
 	

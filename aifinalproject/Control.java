@@ -18,15 +18,14 @@ public class Control {
 	public static Control instance; // Instance of our entire program
 
 	//=== VARIABLES ===
-	public char[][] stateSpace; // The current state of the game
+	public StateSpace stateSpace; // The current state of the game
 	
 	private ArrayList<Agent> agents1, // List of AI agents for player 1 (populated manually in constructor)
 							 agents2; // Agents for player 2
 	
 	private Interface gui;			  // Instance of GUI
 
-	public boolean player1Turn,    // Flip-flops between player turns
-				   isPlayer1Human, // Is player1 a human
+	public boolean isPlayer1Human, // Is player1 a human
 				   isPlayer2Human, // Is team2 a human
 				   gameOver,	   // True when game is over, turns off timer thread
 				   onFirstMove;    // Is the game on the first move?
@@ -67,7 +66,6 @@ public class Control {
 		time2 = 0;
 
 		// Initialize booleans
-		player1Turn = true;
 		onFirstMove = true;
 		isPlayer1Human = false;
 		isPlayer2Human = false;
@@ -78,24 +76,13 @@ public class Control {
 
 	} // END CONSTRUCTOR
 
-	//=== METHODS ===
-	public char[][] getCopyOfStateSpace(){
-		
-		char[][] ss = new char[stateSpace.length][12];
-		
-		for(int i=0; i<ss.length; i++)
-			for(int j=0; j<ss[i].length; j++)
-				ss[i][j] = stateSpace[i][j];
-		
-		return ss;
-		
-	}
-	
+	//=== METHODS ===	
 	/**
 	 * 
 	 * @return		The GUI Interface
 	 */
 	public Interface getInterface(){
+		
 		return gui;
 	}
 	
@@ -119,7 +106,7 @@ public class Control {
 			public void run() {
 				while (!gameOver) {
 
-					if (player1Turn)
+					if (stateSpace.player1Turn())
 						gui.updatePlayer1Time(time1++); // Update scoreboard then increment
 					else
 						gui.updatePlayer2Time(time2++); // Same for P2
@@ -147,6 +134,8 @@ public class Control {
 	 */
 	public void playGame(Agent agent1, Agent agent2){
 
+		ArrayList<Node> winSequence;
+		
 		// Start timer
 		timer.start();
 		
@@ -180,16 +169,28 @@ public class Control {
 			
 		}// End Human Agent Move Listener 1
 		
-		gui.update();				// Update board
+		gui.repaint(); // Update board
 		onFirstMove = false; // No longer first turn	
 	
 		
 		// BEGIN GAME LOOP
 		while(!isGameOver()){ // Run until a player achieves the score to win
 		
-			winCheck(); // Checks Player 1's move
+			// Win Check
+			winSequence = stateSpace.checkForWinSequence();
 			
-			player1Turn = false;	// Player 2 Turn
+			if(!winSequence.isEmpty()){
+				
+				if(winSequence.get(0).getTeam() == Control.PLAYER1)
+					gui.updatePlayer1Score(++player1Score);
+				else
+					gui.updatePlayer2Score(++player2Score);
+					
+				stateSpace.reset();
+				gui.getBoard().repaint();
+				onFirstMove = true;
+			}
+			
 			gui.setPrompt("Player 2, Your Turn!");
 			agent2.makeMove();
 			
@@ -210,14 +211,28 @@ public class Control {
 				
 			}// End Human Agent Move Listener 2
 			
-			gui.update();// Update board
-			winCheck();  // Checks Player 2's move
+			gui.repaint(); // Update board
+			
+			
+			// Win Check
+			winSequence = stateSpace.checkForWinSequence();
+			
+			if(!winSequence.isEmpty()){
+				
+				if(winSequence.get(0).getTeam() == Control.PLAYER1)
+					gui.updatePlayer1Score(++player1Score);
+				else
+					gui.updatePlayer2Score(++player2Score);
+					
+				stateSpace.reset();
+				gui.getBoard().repaint();
+				onFirstMove = true;
+			}
 			
 			
 			if(isGameOver()) // Check for game winning move
 				break;
-			
-			player1Turn = true; // Player 1 Turn
+		
 			gui.setPrompt("Player 1, Your Turn!");
 			agent1.makeMove();
 			
@@ -238,7 +253,7 @@ public class Control {
 				
 			}// End Human Agent Move Listener 3
 			
-			gui.update(); // Update board
+			gui.repaint(); // Update board
 			
 		}// END GAME LOOP WHILE
 		
@@ -262,53 +277,6 @@ public class Control {
 		return false;
 	}
 	
-	/**
-	 * To be called after each player's turn to check for a win. 
-	 * If win is found, update playerScore and GUI label.  
-	 * Does NOT use resolution/unification. Uses a simple graph approach found in
-	 * Node.winFound(). 
-	 * 
-	 * TODO replace with winCheck() which uses resolution.
-	 * TODO How to handle draws?
-	 * 
-	 * @return		True if any four nodes (of one type) are connected.
-	 */
-	private void winCheck(){
-		
-		Node[][] n = gui.getBoard().getNodes(); // Grab double array of Nodes from Board
-		
-		for(int i=0; i<n.length; i++)
-			for(int j=0; j<n[i].length; j++) // Cycle through each Node
-				if(n[i][j].winFound()){		 // If win found at
-					
-					if(player1Turn)								// If Player 1 turn
-						gui.updatePlayer1Score(++player1Score); // Increment score, then update GUI
-					else
-						gui.updatePlayer2Score(++player2Score);
-					
-					onFirstMove = true;	// Reset back to first move
-					player1Turn = true; // Player 1 turn
-					gui.getBoard().reset(); // Reset to blank board
-					
-					return;		// Return after one instance of a win is found.
-				}
-			
-	} // END winCheck()
-	
-
-	
-	/**
-	 * Prints the current state space to the console. 
-	 */
-	public void printSS(){
-		
-		for(int i=0; i<stateSpace.length; i++){
-			for(int j=0; j<12; j++)
-				System.out.print("[" + stateSpace[i][j] + "]");
-			System.out.println();
-		}
-	}
-
 	
 	//=== STATIC METHODS ===
 	

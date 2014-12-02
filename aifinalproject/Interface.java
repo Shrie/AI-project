@@ -78,10 +78,10 @@ public class Interface extends JFrame
 	 * @param width		Width of entire frame
 	 * @param height	Height of entire frame
 	 * @param agents1	List of available agents for Player 1 to choose from
-	 * @param agents2	List of availible agents for Player 3 to choose from
+	 * @param agents2	List of available agents for Player 3 to choose from
 	 */
 	public Interface(int width, int height, ArrayList<Agent> agents1, ArrayList<Agent> agents2) {
-		super("ARTIFICIALLY INTELLIGENT TICK TACK TOE"); // Frame title
+		super("ARTIFICIALLY INTELLIGENT TIC TAC TOE"); // Frame title
 		
 		//Initialize variables
 		this.width = width;
@@ -119,7 +119,7 @@ public class Interface extends JFrame
 
 		setPreferredSize(new Dimension(width, height));
 		pack();
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		setLayout(new BorderLayout());
 
@@ -346,16 +346,7 @@ public class Interface extends JFrame
 
 		prompt.setText(text);
 	}
-	
-	/**
-	 * Syncs board Nodes with current stateSpace and repaints the board.
-	 */
-	public void update(){
-	
-		board.updateNodes(); // Sync nodes with stateSpace
-		board.repaint();	
-		
-	}
+
 
 	//=== OVERRIDES ===
 	

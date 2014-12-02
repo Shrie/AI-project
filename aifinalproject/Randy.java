@@ -63,26 +63,26 @@ public class Randy implements Agent {
 	@Override
 	public void makeMove() {
 			
-			char[][] ss = Control.instance.stateSpace; // Grab current stateSpace
+			StateSpace ss = Control.instance.stateSpace; // Grab current stateSpace
 			
 			// Randomly choose indices
 			Random r = new Random();
-			int x = r.nextInt(ss.length - 1);
+			int x = r.nextInt(ss.getStateSpace().length - 1);
 			int y = r.nextInt(11);
 			
 			if(legalMoves && !Control.instance.onFirstMove){
 				
-				while(Control.instance.getInterface().getBoard().invalidMove(x, y)){ // If invalid, try again
+				while(ss.invalidMove(x, y)){ // If invalid, try again
 					
 					// Randomly reselect a node
-					x = r.nextInt(ss.length - 1); 
+					x = r.nextInt(ss.getStateSpace().length - 1); 
 					y = r.nextInt(11);
 					
 				}
 					
 			}
 			
-			ss[x][y] = player;  // Set node
+			ss.setNode(player, x, y);  // Set node
 			
 			
 			try {

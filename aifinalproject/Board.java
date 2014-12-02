@@ -6,7 +6,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -23,7 +22,6 @@ public class Board extends JPanel
 	
 	//=== VARIABLES ===
 	private int rings = 0;  // Number of rings on board
-	private Node[][] nodes; // Every valid intersection
 	
 	public boolean moveMade = false; // Used for human interaction to control the Human Action Listeners in Interface
 
@@ -45,20 +43,15 @@ public class Board extends JPanel
 
 		this.rings = rings;
 		
-		// Initialize nodes and stateSpace
-		nodes = new Node[rings][12];
-		Control.instance.stateSpace = new char[rings][12];
+		// Initialize nodes
+		Node[][] nodes = new Node[rings][12];
 		
-		// Set all stateSpace elements to NONE to start
-		for(int i=0; i<Control.instance.stateSpace.length; i++)
-			for(int j=0; j<Control.instance.stateSpace[i].length; j++)
-				Control.instance.stateSpace[i][j] = Control.NONE;
 		
 		// Initialize nodes 
-		initializeNodes((int) (getSize().getWidth() / 2), (int) (getSize().getHeight() / 2));
+		initializeNodes(nodes, (int) (getSize().getWidth() / 2), (int) (getSize().getHeight() / 2));
 
-		// Link Nodes to form a graph
-		linkNodes();
+		// Initialize stateSpace
+		Control.instance.stateSpace = new StateSpace(nodes);
 		
 		repaint();
 
@@ -70,7 +63,7 @@ public class Board extends JPanel
 	 * @param x		X-Coordinate of center of board.
 	 * @param y		Y-Coordinate of center of board.
 	 */
-	private void initializeNodes(int x, int y) {
+	private void initializeNodes(Node[][] nodes, int x, int y) {
 
 		int inc = x / (rings + 1); // Increment between each ring
 
@@ -155,146 +148,31 @@ public class Board extends JPanel
 	 */
 	private void drawNodes(Graphics2D g){
 		
+		if(rings == 0)
+			return; 
+		
+		Node[][] nodes = Control.instance.stateSpace.getStateSpace();
+		
 		// Print Node States
-		if(rings != 0)
-			for(int i = 0; i < nodes.length; i++)
-				for(int j = 0; j < nodes[i].length; j++) {
-					
-					if(nodes[i][j].getTeam() == Control.PLAYER1) {
-						g.drawLine(nodes[i][j].x - 5, nodes[i][j].y - 5,
-								nodes[i][j].x + 5, nodes[i][j].y + 5);
-	
-						g.drawLine(nodes[i][j].x + 5, nodes[i][j].y - 5,
-								nodes[i][j].x - 5, nodes[i][j].y + 5);	
-					}
-					
-					
-					if(nodes[i][j].getTeam() == Control.PLAYER2)
-						g.drawOval(nodes[i][j].x - 5, nodes[i][j].y - 5, 10, 10);
-								
-				}	
+		for(int i = 0; i < nodes.length; i++)
+			for(int j = 0; j < nodes[i].length; j++) {
+				
+				if(nodes[i][j].getTeam() == Control.PLAYER1) {
+					g.drawLine(nodes[i][j].x - 5, nodes[i][j].y - 5,
+							nodes[i][j].x + 5, nodes[i][j].y + 5);
+
+					g.drawLine(nodes[i][j].x + 5, nodes[i][j].y - 5,
+							nodes[i][j].x - 5, nodes[i][j].y + 5);	
+				}
+				
+				
+				if(nodes[i][j].getTeam() == Control.PLAYER2)
+					g.drawOval(nodes[i][j].x - 5, nodes[i][j].y - 5, 10, 10);
+							
+			}	
 				
 	}// END drawNodes()
 
-	
-	/**
-	 * Creates a graph by linking all nodes by referencing "children" in "parent" node's arraylist.
-	 */
-	private void linkNodes(){
-	
-		
-		for(int i=0; i<nodes.length; i++)
-			for(int j=0; j<nodes[i].length; j++){ // Cycle through each node
-				
-				// Allows wrap-around of nodes
-				int offset1 = (j == 0)? -11 : 1; 
-				int offset2 = (j == nodes[i].length - 1)? -11 : 1;
-			
-			
-				if(i != 0){
-					nodes[i][j].addTopLeft(nodes[i - 1][j - offset1]);	// Top Left
-					nodes[i][j].addTop(nodes[i - 1][j]);				// Top Middle
-					nodes[i][j].addTopRight(nodes[i - 1][j + offset2]);	// Top Right
-				}
-				
-				nodes[i][j].addLeft(nodes[i][j - offset1]);				// Left
-				nodes[i][j].addRight(nodes[i][j + offset2]); 	  	    // Right
-				
-				if(i != nodes.length - 1){
-					nodes[i][j].addBottomLeft(nodes[i + 1][j - offset1]); // Bottom Left
-					nodes[i][j].addBottom(nodes[i + 1][j]);				  // Bottom Middle
-					nodes[i][j].addBottomRight(nodes[i + 1][j + offset2]);// Bottom Right
-				}
-			}
-				
-	}// END linkNodes()
-	
-	/**
-	 * Updates the nodes double array from stateSpace
-	 */
-	public void updateNodes(){
-		
-		for(int i=0; i<nodes.length; i++)
-			for(int j=0; j<nodes[i].length; j++)				
-				nodes[i][j].setTeam(Control.instance.stateSpace[i][j]);
-		
-	}
-	
-	/**
-	 * Sets all elements of stateSpace to NONE, updates the nodes accordingly, and repaints the board.
-	 */
-	public void reset(){
-		
-		for(int i=0; i<Control.instance.stateSpace.length; i++)
-			for(int j=0; j<Control.instance.stateSpace[i].length; j++)
-				Control.instance.stateSpace[i][j] = Control.NONE;
-		
-		updateNodes(); // Copy changes to nodes
-		
-		repaint();
-	}
-	
-	/**
-	 * Updates the nodes from stateSpace before returning the nodes double array.
-	 * 
-	 * @return		nodes double array
-	 */
-	public Node[][] getNodes(){
-		
-		updateNodes();
-		return nodes;
-	}
-	
-	/**
-	 * Checks i,j coordinates for an invalid move.
-	 * Returns true if location already has been played
-	 * or if there are no played moves adjacent (or diagonal) to
-	 * it. 
-	 * 
-	 * @param i		x-coordinate of matrix interpretation of game board.
-	 * @param j		y-coordinate of matrix interpretation of game board.
-	 * @return		false if valid move, true if not valid
-	 */
-	public boolean invalidMove(int i, int j) {
-
-		// Check for out-of-bounds indices
-		if (i < 0 || i > Control.instance.stateSpace.length - 1 || j < 0 || j > 11)
-			return true;
-		
-		// Check if exact node has already been played
-		if (Control.instance.stateSpace[i][j] != Control.NONE)
-			return true;
-		
-		// Check for any adjacent played nodes
-		return !adjacentPlayed(i, j);
-
-	} // END invalidMove()
-	
-	
-	/**
-	 * Checks if any adjacent node from reference has been played, includes
-	 * check for diagonals.
-	 * 
-	 * @param i		x-coordinate of node in matrix representation of game board.
-	 * @param j		y-coordinate of node in matrix representation of game board.
-	 * @return		true if any node adjacent or immediately diagonal has been played,
-	 * 				false if none have been played yet.
-	 */
-	public boolean adjacentPlayed(int i, int j) {
-
-		updateNodes(); // Sync with stateSpace
-		
-		ArrayList<Node> adj = nodes[i][j].getChildren();
-		
-		for(int k=0; k<adj.size(); k++)
-			if(adj.get(k) != null)
-				if(adj.get(k).getTeam() != Control.NONE)
-					return true;
-			
-				
-		return false;
-
-	} // END adjacentPlayed() 
 
 	//=== OVERRIDES ===
 
@@ -310,22 +188,24 @@ public class Board extends JPanel
 	@Override
 	public void mouseClicked(MouseEvent e) {
 	
-		if((Control.instance.isPlayer1Human && Control.instance.player1Turn)
-				|| (Control.instance.isPlayer2Human && !Control.instance.player1Turn)) // If Current Player is Human
-			for(int i = 0; i < nodes.length; i++)			
-				for(int j = 0; j < nodes[i].length; j++)												
-					if(nodes[i][j].isInRange(e.getX(), e.getY())){					   // If any Node is in the location of click
-						if(invalidMove(i, j) && !Control.instance.onFirstMove){		   
+		StateSpace ss = Control.instance.stateSpace;
+		
+		if((Control.instance.isPlayer1Human && ss.player1Turn())
+				|| (Control.instance.isPlayer2Human && !ss.player1Turn())) // If Current Player is Human
+			for(int i = 0; i < ss.getStateSpace().length; i++)			
+				for(int j = 0; j < ss.getStateSpace()[i].length; j++)												
+					if(ss.getStateSpace()[i][j].isInRange(e.getX(), e.getY())){		// If any Node is in the location of click
+						if(ss.invalidMove(i, j) && !Control.instance.onFirstMove){		   
 							
 							Control.instance.getInterface().setPrompt("Invalid Move!"); // Invalid Node selection
 							
 						}else{	// Valid Node selection
 							
 							// Make mvoe
-							if(Control.instance.player1Turn)
-								Control.instance.stateSpace[i][j] = Control.PLAYER1;
+							if(ss.player1Turn())
+								ss.getStateSpace()[i][j].setTeam(Control.PLAYER1);
 							else
-								Control.instance.stateSpace[i][j] = Control.PLAYER2;
+								ss.getStateSpace()[i][j].setTeam(Control.PLAYER2);
 							
 							repaint();		 // Update board
 							moveMade = true; // Valid move finished by Human agent

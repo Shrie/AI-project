@@ -98,26 +98,6 @@ public class Heuristics implements Agent {
 			
 	}// END heuristic()
 	
-	/**
-	 * 
-	 * @return		An ArrayList containing each currently playable node.
-	 */
-	private ArrayList<Node> grabFrontier(){
-		
-		Node[][] ss = Control.instance.getInterface().getBoard().getNodes();
-		
-		ArrayList<Node> frontier = new ArrayList<Node>();
-		
-		for(int i=0; i<ss.length; i++)
-			for(int j=0; j<ss[i].length; j++)
-				if(!Control.instance.onFirstMove
-						&& !Control.instance.getInterface().getBoard().invalidMove(i, j))
-					frontier.add(ss[i][j]);
-				else if(Control.instance.onFirstMove)
-					frontier.add(ss[i][j]);
-		
-		return frontier;
-	}
 	
 	//=== OVERRIDES ===
 	@Override
@@ -129,28 +109,25 @@ public class Heuristics implements Agent {
 	@Override
 	public void makeMove() {
 		
-		ArrayList<Node> frontier = grabFrontier();
+		StateSpace ss = Control.instance.stateSpace; // Grab current stateSpace
 		
+		ss.expandStateSpace(2); // Expand it down two layers
 		
-		int best = 0;
-		Node bestMove = null;
+		StateSpace best = null;
+		int bestH = 0;
 		
-		if(!frontier.isEmpty())
-			for(int i=0; i<frontier.size(); i++){
-				char[][] ss = Control.instance.getCopyOfStateSpace();
+		for(int i=0; i<ss.getChildren().size(); i++){ // Cycle though enumerated layer
+			
+			int h = heuristic1(this.player, ss.getChildren().get(i).getCharStateSpace()); // Calculate Heuristic
+			
+			if(h > bestH){ // If the state is better
 				
-				ss[frontier.get(i).getIIndex()][frontier.get(i).getJIndex()] = this.player;
-				
-				int h = heuristic1(this.player, ss);
-				
-				
-				if(h > best){
-					bestMove = frontier.get(i);
-					best = h;
-				}
+				best = ss.getChildren().get(i); // Store it
+				bestH = h;
 			}
+		}
 		
-		Control.instance.stateSpace[bestMove.getIIndex()][bestMove.getJIndex()] = this.player;
+		Control.instance.stateSpace = best;  // Take Move
 
 	}
 
