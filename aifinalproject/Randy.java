@@ -82,8 +82,6 @@ public class Randy implements Agent {
 					
 			}
 			
-			ss.setNode(player, x, y);  // Set node
-			
 			
 			try {
 				Thread.sleep(delay); // Delay
@@ -92,6 +90,8 @@ public class Randy implements Agent {
 				
 				Interface.print("Randy Delay Interrupted!");
 			}
+			
+			ss.setNode(player, x, y);  // Set node
 			
 	}
 

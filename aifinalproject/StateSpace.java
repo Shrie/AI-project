@@ -234,9 +234,6 @@ public class StateSpace {
 		
 		expandSS(this, depth);
 		
-		
-		Interface.print("StateSpaces Enumerated ");
-		Interface.print("" + numberOfStates());
 	}
 	
 	public long numberOfStates(){
