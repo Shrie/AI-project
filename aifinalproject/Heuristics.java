@@ -55,7 +55,7 @@ public class Heuristics implements Agent {
             }
         }
 
-        for (int col = 0; col <= cols; col++) {
+        for (int col = 0; col < cols; col++) {
             for (int row = 0; row < rows - 3; row++) {
                 char curr = board[row][col];
                 if ((curr == board[row + 1][col]) && (curr == board[row + 2][col]) && (curr == board[row + 3][col])) {
@@ -104,7 +104,7 @@ public class Heuristics implements Agent {
             }
         }
 
-        for (int col = 0; col <= cols; col++) {
+        for (int col = 0; col < cols; col++) {
             for (int row = 0; row < rows - 2; row++) {
                 char curr = board[row][col];
                 if ((curr == board[row + 1][col]) && (curr == board[row + 2][col])) {
@@ -140,105 +140,50 @@ public class Heuristics implements Agent {
         }
         
         //look for 2s
-        for (int row = 0; row < rows; row++) {
-            char prev = '-';
-            char curr = '-';
-
-            for (int col = 0; col <= cols; col++) {
-                curr = board[row][col % cols];
-                if ((curr == prev) && (curr == p2)) {
-                    score1++;
-                } else if ((curr == prev) && (curr == p1)) {
-                    score2++;
+       for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                char curr = board[row][col];
+                if ((curr == board[row][(col + 1) % cols])) {
+                    if (curr == p1) {
+                        score1 += Math.pow(c, 2);
+                    } else if (curr == p2) {
+                        score2 += Math.pow(c, 2);
+                    }
                 }
             }
-
-            prev = curr;
         }
 
-        for (int col = 0; col <= cols; col++) {
-            char prev = '-';
-            char curr = '-';
-
-            for (int row = 0; row < rows; row++) {
-                curr = board[row][col % cols];
-                if ((curr == prev) && (curr == p1)) {
-                    score1++;
-                } else if ((curr == prev) && (curr == p2)) {
-                    score2++;
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows - 1; row++) {
+                char curr = board[row][col];
+                if ((curr == board[row + 1][col])) {
+                    if (curr == p1) {
+                        score1 += Math.pow(c, 2);
+                    } else if (curr == p2) {
+                        score2 += Math.pow(c, 2);
+                    }
                 }
             }
         }
 
         for (int row = 0; row < rows - 1; row++) {
-            char curr = '-';
-
             for (int col = 0; col < cols; col++) {
-                curr = board[row][col % cols];
-                char l = board[row + 1][(col - 1 + cols) % cols];
-                char r = board[row + 1][(col + 1 + cols) % cols];
-                if ((curr == l) && (curr == p1)) {
-                    score1++;
-                } else if ((curr == l) && (curr == p2)) {
-                    score2++;
+                char curr = board[row][col];
+                
+                if (curr == board[row + 1][(col - 1 + cols) % cols]) {
+                    if (curr == p1) {
+                        score1 += Math.pow(c, 2);
+                    } else if (curr == p2) {
+                        score2 += Math.pow(c, 2);
+                    }
                 }
 
-                if ((curr == r) && (curr == p1)) {
-                    score1++;
-                } else if ((curr == r) && (curr == p2)) {
-                    score2++;
-                }
-            }
-        }
-        //look for 1s
-
-        for (int row = 0; row < rows; row++) {
-            char prev = '-';
-            char curr = '-';
-
-            for (int col = 0; col <= cols; col++) {
-                curr = board[row][col % cols];
-                if ((curr == prev) && (curr == p2)) {
-                    score1++;
-                } else if ((curr == prev) && (curr == p1)) {
-                    score2++;
-                }
-            }
-
-            prev = curr;
-        }
-
-        for (int col = 0; col <= cols; col++) {
-            char prev = '-';
-            char curr = '-';
-
-            for (int row = 0; row < rows; row++) {
-                curr = board[row][col % cols];
-                if ((curr == prev) && (curr == p1)) {
-                    score1++;
-                } else if ((curr == prev) && (curr == p2)) {
-                    score2++;
-                }
-            }
-        }
-
-        for (int row = 0; row < rows - 1; row++) {
-            char curr = '-';
-
-            for (int col = 0; col < cols; col++) {
-                curr = board[row][col % cols];
-                char l = board[row + 1][(col - 1 + cols) % cols];
-                char r = board[row + 1][(col + 1 + cols) % cols];
-                if ((curr == l) && (curr == p1)) {
-                    score1++;
-                } else if ((curr == l) && (curr == p2)) {
-                    score2++;
-                }
-
-                if ((curr == r) && (curr == p1)) {
-                    score1++;
-                } else if ((curr == r) && (curr == p2)) {
-                    score2++;
+                if (curr == board[row + 1][(col - 1 + cols) % cols]) {
+                    if (curr == p1) {
+                        score1 += Math.pow(c, 2);
+                    } else if (curr == p2) {
+                        score2 += Math.pow(c, 2);
+                    }
                 }
             }
         }
