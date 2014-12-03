@@ -146,40 +146,36 @@ public class Control {
 		if(agent2.getName().contains("Human"))
 			isPlayer2Human = true;
 		
-		// BEGIN FIRST TURN
-		gui.setPrompt("Player 1, Your Turn!");
-		agent1.makeMove();			// Make first move
-		
-		// Human Agent Move Listener 1
-		if(isPlayer1Human){
-			
-			while(!gui.getBoard().moveMade){ // Wait for valid move to be made
-				
-				try {
-					
-					Thread.sleep(10);
-					 
-				}catch(InterruptedException e){
-					
-					Interface.print("Interruption in Human Agent L1!");
-				}
-			}
-			
-			gui.getBoard().moveMade = false; // Reset moveMade back to false
-			
-		}// End Human Agent Move Listener 1
-		
-		gui.repaint(); // Update board
-		onFirstMove = false; // No longer first turn	
 	
-		
 		// BEGIN GAME LOOP
-		while(!isGameOver()){ // Run until a player achieves the score to win
-		
-			// Win Check
+		while(!isGameOver()){
+			
+			// Make a move
+			if(stateSpace.player1Turn()){
+				gui.setPrompt("Player 1, Make Your Move!");
+				
+				if(isPlayer1Human)
+					humanPlay();
+				else
+					agent1.makeMove();
+				
+				onFirstMove = false; // A move has been made
+				
+			} else {
+				gui.setPrompt("Player 2, Make Your Move!");
+				
+				if(isPlayer2Human)
+					humanPlay();
+				else
+					agent2.makeMove();
+				
+			}
+			
+			
+			// Check for a win
 			winSequence = stateSpace.checkForWinSequence();
 			
-			if(!winSequence.isEmpty()){
+			if(!winSequence.isEmpty()){ // If a win exists
 				
 				if(winSequence.get(0).getTeam() == Control.PLAYER1)
 					gui.updatePlayer1Score(++player1Score);
@@ -187,82 +183,35 @@ public class Control {
 					gui.updatePlayer2Score(++player2Score);
 					
 				stateSpace.reset();
-				gui.getBoard().repaint();
 				onFirstMove = true;
 			}
 			
-			gui.setPrompt("Player 2, Your Turn!");
-			agent2.makeMove();
+			gui.getBoard().repaint(); // Update GUI to reflect move
 			
-			// Human Agent Move Listener 2
-			if(isPlayer2Human){
-				while(!gui.getBoard().moveMade){  // Wait for human player to make valid move
-					try {
-						
-						Thread.sleep(10);
-						
-					} catch (InterruptedException e){
-						
-						Interface.print("Interruption in Human Agent L2!");
-					}
-				}
-				
-				gui.getBoard().moveMade = false; // Reset moveMade back to false
-				
-			}// End Human Agent Move Listener 2
-			
-			gui.repaint(); // Update board
-			
-			
-			// Win Check
-			winSequence = stateSpace.checkForWinSequence();
-			
-			if(!winSequence.isEmpty()){
-				
-				if(winSequence.get(0).getTeam() == Control.PLAYER1)
-					gui.updatePlayer1Score(++player1Score);
-				else
-					gui.updatePlayer2Score(++player2Score);
-					
-				stateSpace.reset();
-				gui.getBoard().repaint();
-				onFirstMove = true;
-			}
-			
-			
-			if(isGameOver()) // Check for game winning move
-				break;
-		
-			gui.setPrompt("Player 1, Your Turn!");
-			agent1.makeMove();
-			
-			// Human Agent Move Listener 3
-			if(isPlayer1Human){
-				while(!gui.getBoard().moveMade){
-					try {
-						
-						Thread.sleep(10);
-						
-					} catch (InterruptedException e) {
-						
-						Interface.print("Interruption in Human Agent L3!");
-					}
-				}
-				
-				gui.getBoard().moveMade = false; // Reset moveMade back to false
-				
-			}// End Human Agent Move Listener 3
-			
-			gui.repaint(); // Update board
-			
-		}// END GAME LOOP WHILE
+		}
 		
 		// GAME OVER
 		gameOver = true;
 		gui.setPrompt("GAME OVER!");
 		
-
 	} // END playGame()
+	
+	private void humanPlay(){
+		
+		while(!gui.getBoard().moveMade){  // Wait for human player to make valid move
+			try {
+				
+				Thread.sleep(10);
+				
+			} catch (InterruptedException e){
+				
+				Interface.print("Interruption in Human Agent L2!");
+			}
+		}
+		
+		gui.getBoard().moveMade = false; // Reset moveMade back to false
+
+	}
 	
 	/**
 	 * Checks each player's overall score for a win.
