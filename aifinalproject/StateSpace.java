@@ -1,6 +1,5 @@
 package aifinalproject;
 
-import java.awt.Point;
 import java.util.ArrayList;
 /**
  * Object to represent a single state in the game.
@@ -8,11 +7,14 @@ import java.util.ArrayList;
 public class StateSpace {
 	
 	//==== CONSTANTS ===
-	public static final int TERMINAL = -1;
+	public static final int TERMINAL = -1,
+							HEURISTIC1 = 1,
+							HEURISTIC2 = 2;
 	
 	//=== VARIABLES ===
 	private Node[][] state;					// Current state in game
 	private ArrayList<StateSpace> children; // Enumerated possibilities  
+	private int minimaxValue;				// Value used in Minimax
 	
 	private int counter;	// Used for counting the number of state-spaces in an enumeration
 	
@@ -52,6 +54,242 @@ public class StateSpace {
 	}
 	
 	//=== METHODS ===
+	
+	public boolean checkForDraw(){
+		
+		for(int i=0; i<state.length; i++)
+			for(int j=0; j<state[i].length; j++)
+				if(state[i][j].getTeam() == Control.NONE)
+					return false;
+		
+		return true;
+	}
+	
+	public void setMinimaxValue(int value){
+		
+		this.minimaxValue = value;
+	}
+	
+	public int getMinimaxValue(){
+		
+		return minimaxValue;
+	}
+	
+	/**
+     * TODO
+     *
+     * @author Mason
+     * @param player	Player character, either PLAYER1 or PLAYER2
+     * @param board 2d char array representing board and moves
+     * @return	TODO
+     */
+    public int heuristic1(char player) {
+
+        char[][] board = getCharStateSpace();
+
+        int rows = board.length;
+        int cols = board[0].length;
+        int score1 = 0;
+        int score2 = 0;
+        char p1 = Control.PLAYER1;
+        char p2 = Control.PLAYER2;
+        int c = 10; //constant for exponentials
+
+        //look for 4s
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+                    if ((curr == board[row][(col + 1) % cols]) && (curr == board[row][(col + 2) % cols]) && (curr == board[row][(col + 3) % cols])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 4);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows - 3; row++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+                    if ((curr == board[row + 1][col]) && (curr == board[row + 2][col]) && (curr == board[row + 3][col])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 4);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int row = 0; row < rows - 3; row++) {
+            for (int col = 0; col < cols; col++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+                    if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols]) && (curr == board[row + 3][(col - 3 + cols) % cols])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 4);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 4);
+                        }
+                    }
+
+                    if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols]) && (curr == board[row + 3][(col - 3 + cols) % cols])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 4);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        //look for 3s
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+                    if ((curr == board[row][(col + 1) % cols]) && (curr == board[row][(col + 2) % cols])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 3);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 3);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows - 2; row++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+                    if ((curr == board[row + 1][col]) && (curr == board[row + 2][col])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 3);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 3);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int row = 0; row < rows - 2; row++) {
+            for (int col = 0; col < cols; col++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+
+                    if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 3);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 3);
+                        }
+                    }
+
+                    if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 3);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 3);
+                        }
+                    }
+                }
+            }
+        }
+
+        //look for 2s
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+                    if ((curr == board[row][(col + 1) % cols])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 2);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 2);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows - 1; row++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+                    if ((curr == board[row + 1][col])) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 2);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 2);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int row = 0; row < rows - 1; row++) {
+            for (int col = 0; col < cols; col++) {
+                char curr = board[row][col];
+                if (curr == p1 || curr == p2) {
+                    if (curr == board[row + 1][(col - 1 + cols) % cols]) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 2);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 2);
+                        }
+                    }
+
+                    if (curr == board[row + 1][(col - 1 + cols) % cols]) {
+                        if (curr == p1) {
+                            score1 += Math.pow(c, 2);
+                        } else if (curr == p2) {
+                            score2 += Math.pow(c, 2);
+                        }
+                    }
+                }
+            }
+        }
+
+        //maybe change to other values for minimax
+        if (player == p1) {
+            return score1 - score2;
+        } else {
+            return score2 - score1;
+        }
+
+    }// END heuristic1()
+    
+    
+    public int heuristic2(char player){
+    	
+    	char opponent = (player == Control.PLAYER1)? Control.PLAYER2 : Control.PLAYER1;
+    	
+    	if(!checkForWinSequence().isEmpty()) // You win this turn
+    		return 5;
+    	
+    	if(!getOpenTriples(opponent).isEmpty()) // Opponent is one move away from a win
+    		return -4;
+    	
+    	if(!getOpenEndedPairs(opponent).isEmpty()) // Opponent confirms a win in two moves
+    		return -3;
+    	
+    	if(!getOpenEndedPairs(player).isEmpty()) // You confirm a win in two moves
+    		return 3;
+    	
+    	
+    	return 0;
+    }
+    
+    
+    
 	/**
 	 * Gathers triples still with a playable location. Does not gather closed triples.
 	 * Ex. XXNX and XXXN 
@@ -643,6 +881,10 @@ public class StateSpace {
 				
 				System.out.println();
 			}
+		
+		System.out.println("H:" + this.heuristic1(Control.PLAYER2) + " M:" + this.getMinimaxValue());
+		
+		System.out.println();
 	}
 	
 	/**
@@ -711,14 +953,14 @@ public class StateSpace {
 				
 		ArrayList<Node> frontier = root.frontier(); // Every valid option
 		
-		if((depth == TERMINAL && frontier.isEmpty()) || depth == 0) // Base-case return
+		if(frontier.isEmpty() || depth == 0) // Base-case return
 			return;
 		
 		for(int i=0; i<frontier.size(); i++){ // For each of those options
 			
 			StateSpace ss = root.copy(); // Copy the state-space
 			
-			char player = (player1Turn())? Control.PLAYER1 : Control.PLAYER2; // Determine who's turn
+			char player = (root.player1Turn())? Control.PLAYER1 : Control.PLAYER2; // Determine who's turn
 			
 			ss.setNode(player, frontier.get(i).i, frontier.get(i).j); // Make that move to the new state-space
 			

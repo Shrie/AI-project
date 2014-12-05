@@ -1,217 +1,56 @@
 package aifinalproject;
 
+import java.awt.Color;
 import java.awt.GridLayout;
 
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.JSpinner.DefaultEditor;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 
 public class Heuristics implements Agent {
 
     //=== VARIABLES ===
     private char player;
+    private int delay,
+    			depth,
+    			heuristic;
+    
+    private Minimax mm;
+    
+    private boolean prune;
+    
+    private JSpinner delaySpin,
+    				 depthSpin;
+    
+    private JRadioButton h1, h2;
+    
+    private JCheckBox pruneCheck;
 
     //=== CONSTRUCTORS ===
     public Heuristics() {
 
     }
 
-    public Heuristics(char player) {
+    public Heuristics(char player, int delay, int depth, boolean prune, int heuristic) {
 
+    	this.delay = delay;
         this.player = player;
+        this.depth = depth;
+        this.prune = prune;
+        this.heuristic = heuristic;
+        
+        mm = new Minimax(depth, prune, player, heuristic);
     }
 
     //=== METHODS ===
-    /**
-     * TODO
-     *
-     * @author Mason
-     * @param player	Player character, either PLAYER1 or PLAYER2
-     * @param board 2d char array representing board and moves
-     * @return	TODO
-     */
-    public int heuristic1(char player, StateSpace ss) {
-
-        char[][] board = ss.getCharStateSpace();
-
-        int rows = board.length;
-        int cols = board[0].length;
-        int score1 = 0;
-        int score2 = 0;
-        char p1 = Control.PLAYER1;
-        char p2 = Control.PLAYER2;
-        int c = 10; //constant for exponentials
-
-        //look for 4s
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-                    if ((curr == board[row][(col + 1) % cols]) && (curr == board[row][(col + 2) % cols]) && (curr == board[row][(col + 3) % cols])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 4);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 4);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows - 3; row++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-                    if ((curr == board[row + 1][col]) && (curr == board[row + 2][col]) && (curr == board[row + 3][col])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 4);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 4);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int row = 0; row < rows - 3; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-                    if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols]) && (curr == board[row + 3][(col - 3 + cols) % cols])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 4);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 4);
-                        }
-                    }
-
-                    if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols]) && (curr == board[row + 3][(col - 3 + cols) % cols])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 4);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 4);
-                        }
-                    }
-                }
-            }
-        }
-
-        //look for 3s
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-                    if ((curr == board[row][(col + 1) % cols]) && (curr == board[row][(col + 2) % cols])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 3);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 3);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows - 2; row++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-                    if ((curr == board[row + 1][col]) && (curr == board[row + 2][col])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 3);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 3);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int row = 0; row < rows - 2; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-
-                    if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 3);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 3);
-                        }
-                    }
-
-                    if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 3);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 3);
-                        }
-                    }
-                }
-            }
-        }
-
-        //look for 2s
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-                    if ((curr == board[row][(col + 1) % cols])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 2);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 2);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows - 1; row++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-                    if ((curr == board[row + 1][col])) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 2);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 2);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int row = 0; row < rows - 1; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if (curr == p1 || curr == p2) {
-                    if (curr == board[row + 1][(col - 1 + cols) % cols]) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 2);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 2);
-                        }
-                    }
-
-                    if (curr == board[row + 1][(col - 1 + cols) % cols]) {
-                        if (curr == p1) {
-                            score1 += Math.pow(c, 2);
-                        } else if (curr == p2) {
-                            score2 += Math.pow(c, 2);
-                        }
-                    }
-                }
-            }
-        }
-
-        //maybe change to other values for minimax
-        if (player == p1) {
-            return score1 - score2;
-        } else {
-            return score2 - score1;
-        }
-
-    }// END heuristic()
+    
 
     //=== OVERRIDES ===
     @Override
@@ -223,45 +62,57 @@ public class Heuristics implements Agent {
     @Override
     public void makeMove() {
 
-        StateSpace ss = Control.instance.stateSpace; // Grab current statespace
-        ss.expandStateSpace(1);						 // Enumerate all possibilities for the agent
-
-        StateSpace best = ss.getChildren().get(0); // To avoid returning NULL if no better state is found
-        int bestH = 0;
-
-        for (int i = 0; i < ss.getChildren().size(); i++) { // For all possibilities
-
-            int h = heuristic1(this.player, ss.getChildren().get(i)); // Apply the heurisitic to the state
-
-            if (h > bestH) {	// If this state is better than what we currently have, store it
-
-                bestH = h;
-                best = ss.getChildren().get(i);
-            }
-
-        }
-
-        Control.instance.stateSpace = best; // Finalize move
-
+    	try {
+			Thread.sleep(delay * 1000);
+		} catch (InterruptedException e) {
+			Interface.print("Agent Sleep Interrupted!");
+		}
+ 
+    	
+    	Control.instance.stateSpace = mm.decideMove(Control.instance.stateSpace);
+    	
     }
 
     @Override
     public JPanel createOptionPane() {
 
         JPanel p = new JPanel(new GridLayout(0, 1));
+        p.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
         p.add(new JLabel("Various Heuristics", JLabel.CENTER));
 
-        p.add(new JLabel());
-        p.add(new JLabel());
-        p.add(new JLabel());
+        p.add(h1 = new JRadioButton("Heuristic 1"));
+        h1.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        p.add(h2 = new JRadioButton("Heuristic 2", true));
+        h2.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        ButtonGroup gp = new ButtonGroup();
+        gp.add(h1);
+        gp.add(h2);
+        
+        p.add(depthSpin = new JSpinner(new SpinnerNumberModel(1, 1, 5, 1)));
+        depthSpin.setBorder(BorderFactory.createTitledBorder("Minimax Depth"));
+		((DefaultEditor) depthSpin.getEditor()).getTextField()
+			.setHorizontalAlignment(JTextField.CENTER);
+		((DefaultEditor) depthSpin.getEditor()).getTextField().setEditable(false);
+		
+		p.add(delaySpin = new JSpinner(new SpinnerNumberModel(0, 0, 25, 1)));
+		delaySpin.setBorder(BorderFactory.createTitledBorder("Delay (seconds)"));
+		((DefaultEditor) delaySpin.getEditor()).getTextField()
+			.setHorizontalAlignment(JTextField.CENTER);
+		((DefaultEditor) delaySpin.getEditor()).getTextField().setEditable(false);
 
+		p.add(pruneCheck = new JCheckBox("Alpha-Beta Pruning"));
+		pruneCheck.setSelected(true);
+		
         return p;
     }
 
     @Override
     public Agent createNew(char team) {
 
-        return new Heuristics(team);
+    	int h = (h1.isSelected())? StateSpace.HEURISTIC1 : StateSpace.HEURISTIC2;
+    	
+        return new Heuristics(team, (int) delaySpin.getValue(), 
+        		(int) depthSpin.getValue(), pruneCheck.isSelected(), h);
     }
 
 }// END HEURISTICS
