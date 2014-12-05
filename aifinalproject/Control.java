@@ -146,12 +146,14 @@ public class Control {
 		if(agent2.getName().contains("Human"))
 			isPlayer2Human = true;
 		
-	
+		boolean p1 = true;
+		
 		// BEGIN GAME LOOP
 		while(!isGameOver()){
 			
+			
 			// Make a move
-			if(stateSpace.player1Turn()){
+			if(p1){ //stateSpace.player1Turn()){
 				gui.setPrompt("Player 1, Make Your Move!");
 				
 				if(isPlayer1Human)
@@ -160,6 +162,7 @@ public class Control {
 					agent1.makeMove();
 				
 				onFirstMove = false; // A move has been made
+				p1 = false;
 				
 			} else {
 				gui.setPrompt("Player 2, Make Your Move!");
@@ -169,6 +172,7 @@ public class Control {
 				else
 					agent2.makeMove();
 				
+				p1 = true;
 			}
 			
 			
@@ -184,11 +188,19 @@ public class Control {
 					
 				stateSpace.reset();
 				onFirstMove = true;
+				p1 = true;
+			}
+			
+			// Check for draw
+			if(stateSpace.checkForDraw()){
+				
+				stateSpace.reset();
+				onFirstMove = true;
+				gui.setPrompt("Draw!");
+				p1 = true;
 			}
 			
 			gui.getBoard().repaint(); // Update GUI to reflect move
-			
-		 
 			
 		}
 		
