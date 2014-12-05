@@ -1,23 +1,38 @@
 package aifinalproject;
 
 import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.Random;
 
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.JSpinner.DefaultEditor;
 
 public class Heuristics implements Agent {
 
     //=== VARIABLES ===
     private char player;
+    private JRadioButton mason, chad;
+    private JSpinner del;
+    private boolean h1;
+    private int delay;
 
     //=== CONSTRUCTORS ===
     public Heuristics() {
 
     }
 
-    public Heuristics(char player) {
+    public Heuristics(char player, boolean h1, int delay) {
 
         this.player = player;
+        this.h1 = h1;
+        this.delay = delay;
     }
 
     //=== METHODS ===
@@ -39,7 +54,7 @@ public class Heuristics implements Agent {
         int score2 = 0;
         char p1 = Control.PLAYER1;
         char p2 = Control.PLAYER2;
-        int c = 10; //constant for exponentials
+        int c = 5; //constant for exponentials
 
         //look for 4s
         for (int row = 0; row < rows; row++) {
@@ -48,9 +63,9 @@ public class Heuristics implements Agent {
                 if (curr == p1 || curr == p2) {
                     if ((curr == board[row][(col + 1) % cols]) && (curr == board[row][(col + 2) % cols]) && (curr == board[row][(col + 3) % cols])) {
                         if (curr == p1) {
-                            score1 += Math.pow(c, 4);
+                            score1 += Math.pow(c, 5);
                         } else if (curr == p2) {
-                            score2 += Math.pow(c, 4);
+                            score2 += Math.pow(c, 5);
                         }
                     }
                 }
@@ -63,9 +78,9 @@ public class Heuristics implements Agent {
                 if (curr == p1 || curr == p2) {
                     if ((curr == board[row + 1][col]) && (curr == board[row + 2][col]) && (curr == board[row + 3][col])) {
                         if (curr == p1) {
-                            score1 += Math.pow(c, 4);
+                            score1 += Math.pow(c, 5);
                         } else if (curr == p2) {
-                            score2 += Math.pow(c, 4);
+                            score2 += Math.pow(c, 5);
                         }
                     }
                 }
@@ -78,17 +93,17 @@ public class Heuristics implements Agent {
                 if (curr == p1 || curr == p2) {
                     if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols]) && (curr == board[row + 3][(col - 3 + cols) % cols])) {
                         if (curr == p1) {
-                            score1 += Math.pow(c, 4);
+                            score1 += Math.pow(c, 5);
                         } else if (curr == p2) {
-                            score2 += Math.pow(c, 4);
+                            score2 += Math.pow(c, 5);
                         }
                     }
 
                     if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols]) && (curr == board[row + 3][(col - 3 + cols) % cols])) {
                         if (curr == p1) {
-                            score1 += Math.pow(c, 4);
+                            score1 += Math.pow(c, 5);
                         } else if (curr == p2) {
-                            score2 += Math.pow(c, 4);
+                            score2 += Math.pow(c, 5);
                         }
                     }
                 }
@@ -157,9 +172,9 @@ public class Heuristics implements Agent {
                 if (curr == p1 || curr == p2) {
                     if ((curr == board[row][(col + 1) % cols])) {
                         if (curr == p1) {
-                            score1 += Math.pow(c, 2);
+                            score1 += Math.pow(c, 1);
                         } else if (curr == p2) {
-                            score2 += Math.pow(c, 2);
+                            score2 += Math.pow(c, 1);
                         }
                     }
                 }
@@ -172,9 +187,9 @@ public class Heuristics implements Agent {
                 if (curr == p1 || curr == p2) {
                     if ((curr == board[row + 1][col])) {
                         if (curr == p1) {
-                            score1 += Math.pow(c, 2);
+                            score1 += Math.pow(c, 1);
                         } else if (curr == p2) {
-                            score2 += Math.pow(c, 2);
+                            score2 += Math.pow(c, 1);
                         }
                     }
                 }
@@ -187,17 +202,17 @@ public class Heuristics implements Agent {
                 if (curr == p1 || curr == p2) {
                     if (curr == board[row + 1][(col - 1 + cols) % cols]) {
                         if (curr == p1) {
-                            score1 += Math.pow(c, 2);
+                            score1 += Math.pow(c, 1);
                         } else if (curr == p2) {
-                            score2 += Math.pow(c, 2);
+                            score2 += Math.pow(c, 1);
                         }
                     }
 
                     if (curr == board[row + 1][(col - 1 + cols) % cols]) {
                         if (curr == p1) {
-                            score1 += Math.pow(c, 2);
+                            score1 += Math.pow(c, 1);
                         } else if (curr == p2) {
-                            score2 += Math.pow(c, 2);
+                            score2 += Math.pow(c, 1);
                         }
                     }
                 }
@@ -211,7 +226,41 @@ public class Heuristics implements Agent {
             return score2 - score1;
         }
 
-    }// END heuristic()
+    }// END heuristic1()
+    
+    public int heuristic2(char player, StateSpace ss){
+    	
+    	char opponent = (player == Control.PLAYER1)? Control.PLAYER2 : Control.PLAYER1;
+    	ArrayList<Node> win = ss.checkForWinSequence();
+    	
+    	if(!win.isEmpty())
+    		if(win.get(0).getTeam() == player)
+    			return 10;	// Win for player is present
+    		else if(win.get(0).getTeam() != player)
+    			return -10; // Win for opponent is present
+    	
+    	if(!ss.getOpenTriples(opponent).isEmpty()) // Opponent is one move away from win
+    		return -8;
+    	
+    	if(!ss.getOpenEndedPairs(opponent).isEmpty())
+    		return -7;
+    	
+    	 if(!ss.getOpenEndedPairs(player).isEmpty()) // Will solidify a win
+    		 return 8;
+    	 
+    	 if(!ss.getOpenTriples(player).isEmpty())
+    		 return 7;
+    	 
+    	 if(!ss.getSingleEndedPairs(opponent).isEmpty())
+    		 return -5;
+    	 
+    	 if(!ss.getSingleEndedPairs(player).isEmpty())
+    		 return 5;
+    	 
+    	
+    	return 0;
+    	
+    }
 
     //=== OVERRIDES ===
     @Override
@@ -222,27 +271,41 @@ public class Heuristics implements Agent {
 
     @Override
     public void makeMove() {
-
-        StateSpace ss = Control.instance.stateSpace; // Grab current statespace
-        ss.expandStateSpace(1);						 // Enumerate all possibilities for the agent
-
-        StateSpace best = ss.getChildren().get(0); // To avoid returning NULL if no better state is found
-        int bestH = 0;
-
-        for (int i = 0; i < ss.getChildren().size(); i++) { // For all possibilities
-
-            int h = heuristic1(this.player, ss.getChildren().get(i)); // Apply the heurisitic to the state
-
-            if (h > bestH) {	// If this state is better than what we currently have, store it
-
-                bestH = h;
-                best = ss.getChildren().get(i);
-            }
-
-        }
-
-        Control.instance.stateSpace = best; // Finalize move
-
+    	
+    	StateSpace ss = Control.instance.stateSpace; // Grab current state-space
+    	ss.expandStateSpace(1);						 // Enumerate one ply
+    	
+    	int currentValue = (h1)? heuristic1(player, ss) : heuristic2(player, ss); // Current value of board
+    	
+    	StateSpace best = ss.getChildren().get(new Random().nextInt(ss.getChildren().size() - 1));
+    	int bestDifference = currentValue;
+    	
+    	for(int i=0; i<ss.getChildren().size(); i++){
+    		    		
+    		int state = (h1)? 
+    				heuristic1(player, ss.getChildren().get(i)) 
+    				: heuristic2(player, ss.getChildren().get(i));
+    				
+    		int dif = state - currentValue;
+    		
+    		if(dif > bestDifference ){
+    			
+    			bestDifference = dif;
+    			best = ss.getChildren().get(i);
+    		}
+    			
+    	}
+    	
+    	try {
+			Thread.sleep(delay * 1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    		
+    
+    	Control.instance.stateSpace = best; // Finalize move
+    	
     }
 
     @Override
@@ -250,18 +313,30 @@ public class Heuristics implements Agent {
 
         JPanel p = new JPanel(new GridLayout(0, 1));
         p.add(new JLabel("Various Heuristics", JLabel.CENTER));
-
+        
+        del = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+		del.setBorder(BorderFactory.createTitledBorder("Delay (seconds)"));
+		((DefaultEditor) del.getEditor()).getTextField()
+			.setHorizontalAlignment(JTextField.CENTER);
+		((DefaultEditor) del.getEditor()).getTextField().setEditable(false);
+		p.add(del);
+        p.add(mason = new JRadioButton("Mason's", true));
+        p.add(chad = new JRadioButton("Chad's"));
         p.add(new JLabel());
-        p.add(new JLabel());
-        p.add(new JLabel());
-
+        
+        ButtonGroup gp = new ButtonGroup();
+        gp.add(mason);
+        gp.add(chad);
+        
         return p;
     }
 
     @Override
     public Agent createNew(char team) {
 
-        return new Heuristics(team);
+    	boolean h1 = (mason.isSelected())? true : false;
+    	
+        return new Heuristics(team, h1, (int)del.getValue());
     }
 
 }// END HEURISTICS
