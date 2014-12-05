@@ -6,8 +6,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
+
+import aifinalproject.StateSpace.Set;
 
 /**
  * Controls the drawing out and human interaction of our matrix representation
@@ -201,11 +204,12 @@ public class Board extends JPanel
 							
 						}else{	// Valid Node selection
 							
-							// Make mvoe
+							// Make move
 							if(ss.player1Turn())
 								ss.getStateSpace()[i][j].setTeam(Control.PLAYER1);
 							else
 								ss.getStateSpace()[i][j].setTeam(Control.PLAYER2);
+							
 							
 							repaint();		 // Update board
 							moveMade = true; // Valid move finished by Human agent
