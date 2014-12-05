@@ -14,7 +14,7 @@ public class StateSpace {
 	private Node[][] state;					// Current state in game
 	private ArrayList<StateSpace> children; // Enumerated possibilities  
 	
-	private long counter;
+	private int counter;	// Used for counting the number of state-spaces in an enumeration
 	
 	//=== CONSTRUCTORS ===
 	/**
@@ -52,45 +52,478 @@ public class StateSpace {
 	}
 	
 	//=== METHODS ===
-	public ArrayList<ArrayList<Node>> getOpenEndedPairs(char player){
+	/**
+	 * Gathers triples still with a playable location. Does not gather closed triples.
+	 * Ex. XXNX and XXXN 
+	 * 
+	 * @param player	Player to gather for
+	 * @return			List of open triples.
+	 */
+	public ArrayList<Set> getOpenTriples(char player){
 		
-		ArrayList<ArrayList<Node>> oep = new ArrayList<ArrayList<Node>>();
+		ArrayList<Set> trips = new ArrayList<Set>();
+		ArrayList<Set> spec = getSpecialCases(player);
 		
-		
-		
-		
-		return oep;
-	}
-	
-	public ArrayList<ArrayList<Node>> getPairs(char player){
-		
-		ArrayList<ArrayList<Node>> pairs = new ArrayList<ArrayList<Node>>();
+		for(int i=0; i<spec.size(); i++) 
+			if(spec.get(i).set.size() == 3)
+				trips.add(spec.get(i)); // Add all the triples from special cases
+										// XXNX special open trip
 		
 		for(int i=0; i<state.length; i++)
-			for(int j=0; j<state[i].length; j++);
+			for(int j=0; j<state[i].length; j++){ // Cycle through each node in SS
+				
+				Node n = state[i][j];
+				
+				if(n.getTeam() == player){ // Node is a match
+					
+					// Vertical check
+					try{
+						if(n.getBottom().getTeam() == player
+								&& n.getTop().getTeam() == player
+								&& n.getTop().getTop().getTeam() == Control.NONE)
+							trips.add(new Set(n.getBottom(), n, n.getTop(), Set.VERTICAL));
+				
+					}catch(NullPointerException e){}
+					
+					try{
+						if(n.getBottom().getTeam() == player
+								&& n.getTop().getTeam() == player
+								&& n.getBottom().getBottom().getTeam() == Control.NONE)
+							trips.add(new Set(n.getBottom(), n, n.getTop(), Set.VERTICAL));
+				
+					}catch(NullPointerException e){}
+					
+					// Horizontal check
+					if(n.getLeft().getTeam() == player
+							&& n.getRight().getTeam() == player
+							&& n.getRight().getRight().getTeam() == Control.NONE)
+						trips.add(new Set(n.getLeft(), n, n.getRight(), Set.HORIZONTAL));
+					
+					if(n.getLeft().getTeam() == player
+							&& n.getRight().getTeam() == player
+							&& n.getLeft().getLeft().getTeam() == Control.NONE)
+						trips.add(new Set(n.getLeft(), n, n.getRight(), Set.HORIZONTAL));
+					
+					// Left Diagonal Check
+					try{
+						if(n.getTopLeft().getTeam() == player
+								&& n.getBottomRight().getTeam() == player
+								&& n.getTopLeft().getTopLeft().getTeam() == Control.NONE)
+							trips.add(new Set(n.getTopLeft(), n, n.getBottomRight(), Set.LEFT_DIAGONAL));
+						
+					}catch(NullPointerException e){}
+					
+					try{
+						if(n.getTopLeft().getTeam() == player
+								&& n.getBottomRight().getTeam() == player
+								&& n.getBottomRight().getBottomRight().getTeam() == Control.NONE)
+							trips.add(new Set(n.getTopLeft(), n, n.getBottomRight(), Set.LEFT_DIAGONAL));
+						
+					}catch(NullPointerException e){}
+					
+					// Right Diagonal Check
+					try{
+						if(n.getTopRight().getTeam() == player
+								&& n.getBottomLeft().getTeam() == player
+								&& n.getTopRight().getTopRight().getTeam() == Control.NONE)
+							trips.add(new Set(n.getTopRight(), n, n.getBottomLeft(), Set.RIGHT_DIAGNONAL));
+						
+					}catch(NullPointerException e){}
+					
+					try{
+						if(n.getTopRight().getTeam() == player
+								&& n.getBottomLeft().getTeam() == player
+								&& n.getBottomLeft().getBottomLeft().getTeam() == Control.NONE)
+							trips.add(new Set(n.getTopRight(), n, n.getBottomLeft(), Set.RIGHT_DIAGNONAL));
+						
+					}catch(NullPointerException e){}
+				}
+				
+			}
 		
-		return null;
+		return trips;
+		
+	} // END getOpenTriples()
+	
+	/**
+	 * Gathers single-ended pairs.
+	 * A single ended pair is something like this OXXNN
+	 * 
+	 * @param player	Player to gather pairs for
+	 * @return			A list of single ended pairs.
+	 */
+	public ArrayList<Set> getSingleEndedPairs(char player){
+		
+		ArrayList<Set> cases = getSpecialCases(player);
+		ArrayList<Set> pairs = new ArrayList<Set>();
+		
+		for(int i=0; i<cases.size(); i++)
+			if(cases.get(i).set.size() == 2) // If case is a double, not a trip
+				pairs.add(cases.get(i));	 // Then it's what we need
+		
+		return pairs;
 	}
 	
-	private boolean sequenceExists(ArrayList<ArrayList<Node>> data, ArrayList<Node> sequence){
+	/**
+	 * Gathers pairs which have two open locations on one side or triples with
+	 * One open location in the middle of it. EX: OXXNN or XXNX
+	 * Does not work as expected for rings > 4 as the vertical pairs are not tested
+	 * against "blocks" Ex. OXXNN, the O represents a block
+	 * 
+	 * @param player	Player to gather for
+	 * @return			List of sets, some doubles and some trips
+	 */
+	private ArrayList<Set> getSpecialCases(char player){
 		
-		if(data == null)
+		ArrayList<Set> pairs = getPairs(player);
+		ArrayList<Set> spec = new ArrayList<Set>();
+		
+		char opponent = (player == Control.PLAYER1)? Control.PLAYER2 : Control.PLAYER1;
+				
+		for(int i=0; i<pairs.size(); i++){ // Cycle through each pair
+			
+			Node first = pairs.get(i).set.get(0);
+			Node second = pairs.get(i).set.get(1);
+			
+			switch(pairs.get(i).direction){
+			case Set.VERTICAL:
+				
+				// Opening Above
+				try{
+					if(second.getTop().getTeam() == Control.NONE
+						&& second.getTop().getTop().getTeam() == Control.NONE) // XXNN
+							spec.add(pairs.get(i));
+					
+					if(second.getTop().getTeam() == Control.NONE
+							&& second.getTop().getTop().getTeam() == player){ // XXNX
+						
+								pairs.get(i).set.add(second.getTop().getTop()); // Add third Node
+								spec.add(pairs.get(i));			
+					}
+				}catch(NullPointerException e){}
+				
+				// Opening Below
+				try{
+					if(first.getBottom().getTeam() == Control.NONE
+						&& first.getBottom().getBottom().getTeam() == Control.NONE) // XXNN
+							spec.add(pairs.get(i));
+					
+					if(first.getBottom().getTeam() == Control.NONE
+							&& first.getBottom().getBottom().getTeam() == player){ // XXNX
+								
+								pairs.get(i).set.add(first.getBottom().getBottom()); // Add third Node
+								spec.add(pairs.get(i));
+					}
+				}catch(NullPointerException e){}
+				
+				break;
+				
+			case Set.HORIZONTAL:
+				if(second.getLeft().getTeam() == Control.NONE 
+					&& second.getLeft().getLeft().getTeam() == Control.NONE
+					&& first.getRight().getTeam() == opponent)
+						spec.add(pairs.get(i));
+				
+				if(second.getLeft().getTeam() == Control.NONE 
+					&& second.getLeft().getLeft().getTeam() == player){
+					
+						pairs.get(i).set.add(second.getLeft().getLeft());
+						spec.add(pairs.get(i));
+				}
+				
+				if(first.getRight().getTeam() == Control.NONE
+					&& first.getRight().getRight().getTeam() == Control.NONE
+					&& second.getLeft().getTeam() == opponent) //TODO for rings > 4, vertical pairs would need to check for blocks like this
+						spec.add(pairs.get(i));
+				
+				if(first.getRight().getTeam() == Control.NONE
+					&& first.getRight().getRight().getTeam() == player){
+					
+						pairs.get(i).set.add(first.getRight().getRight());
+						spec.add(pairs.get(i));
+				}
+				
+				break;
+				
+			case Set.LEFT_DIAGONAL:
+				try{
+					if(second.getTopLeft().getTeam() == Control.NONE 
+						&& second.getTopLeft().getTopLeft().getTeam() == Control.NONE)
+							spec.add(pairs.get(i));
+					
+					if(second.getTopLeft().getTeam() == Control.NONE 
+						&& second.getTopLeft().getTopLeft().getTeam() == player){
+						
+							pairs.get(i).set.add(second.getTopLeft().getTopLeft());
+							spec.add(pairs.get(i));
+					}
+				}catch(NullPointerException e){}
+				
+				try{
+					if(first.getBottomRight().getTeam() == Control.NONE
+						&& first.getBottomRight().getBottomRight().getTeam() == Control.NONE)
+							spec.add(pairs.get(i));
+					
+					if(first.getBottomRight().getTeam() == Control.NONE
+						&& first.getBottomRight().getBottomRight().getTeam() == player){
+						
+							pairs.get(i).set.add(first.getBottomRight().getBottomRight());
+							spec.add(pairs.get(i));
+					}
+				}catch(NullPointerException e){}
+				
+				break;
+				
+			case Set.RIGHT_DIAGNONAL:
+				try{
+					if(second.getTopRight().getTeam() == Control.NONE 
+						&& second.getTopRight().getTopRight().getTeam() == Control.NONE)
+							spec.add(pairs.get(i));
+					
+					if(second.getTopRight().getTeam() == Control.NONE 
+						&& second.getTopRight().getTopRight().getTeam() == player){
+						
+							pairs.get(i).set.add(second.getTopRight().getTopRight());
+							spec.add(pairs.get(i));
+					}
+				}catch(NullPointerException e){}
+				
+				try{
+					if(first.getBottomLeft().getTeam() == Control.NONE
+						&& first.getBottomLeft().getBottomLeft().getTeam() == Control.NONE)
+							spec.add(pairs.get(i));
+					
+					if(first.getBottomLeft().getTeam() == Control.NONE
+						&& first.getBottomLeft().getBottomLeft().getTeam() == player){
+						
+							pairs.get(i).set.add(first.getBottomLeft().getBottomLeft());
+							spec.add(pairs.get(i));
+					}
+				}catch(NullPointerException e){}
+				
+				break;
+				
+			}
+		}
+		
+		return spec;
+		
+	} // END getSpecialCases()
+	
+	/**
+	 * Complies a list of open-ended pairs. An open-ended pair is one which has a frontier node on
+	 * each side of the pair. Ex. NXXN
+	 * 
+	 * @param player	The player to compile the data for
+	 * @return			And ArrayList of Sets with direction and open ends.
+	 */
+	public ArrayList<Set> getOpenEndedPairs(char player){
+		
+		ArrayList<Set> pairs = getPairs(player); // Grab all pairs
+		ArrayList<Set> oep = new ArrayList<Set>();
+		
+		for(int i=0; i<pairs.size(); i++){ // Cycle through each set
+		
+			Node first = pairs.get(i).set.get(0);
+			Node second = pairs.get(i).set.get(1);
+			
+			// Vertical Pairs
+			try{
+				if(pairs.get(i).direction == Set.VERTICAL)
+					if(first.getBottom().getTeam() == Control.NONE 
+						&& second.getTop().getTeam() == Control.NONE)
+							oep.add(pairs.get(i));
+					
+			}catch(NullPointerException e){}
+				
+			
+			// Horizontal Pairs
+			if(pairs.get(i).direction == Set.HORIZONTAL)
+				if(first.getRight().getTeam() == Control.NONE
+					&& second.getLeft().getTeam() == Control.NONE)
+						oep.add(pairs.get(i));
+					
+			
+			
+			// Left Diagonal Pairs
+			try{
+				if(pairs.get(i).direction == Set.LEFT_DIAGONAL)
+					if(first.getBottomRight().getTeam() == Control.NONE
+						&& second.getTopLeft().getTeam() == Control.NONE)
+							oep.add(pairs.get(i));
+					
+			}catch(NullPointerException e){}
+			
+			
+			// Right Diagonal Pairs
+			try{
+				if(pairs.get(i).direction == Set.LEFT_DIAGONAL)
+					if(first.getBottomLeft().getTeam() == Control.NONE
+						&& second.getTopRight().getTeam() == Control.NONE)
+							oep.add(pairs.get(i));
+				
+			}catch(NullPointerException e){}
+			
+			
+		}
+		
+		return oep;
+		
+	} // END getOpenEndedPairs()
+	
+	/**
+	 * Searches the entire state-space for adjacent Nodes which share the 
+	 * same char value. Will not add sets which are actually greater than pairs.
+	 * 
+	 * @param player	Player to search for, typically X or O
+	 * @return			An ArrayList of Sets, adjacent pairs of Nodes on the board
+	 */
+	public ArrayList<Set> getPairs(char player){
+		
+		ArrayList<ArrayList<Node>> pairs = new ArrayList<ArrayList<Node>>();
+		ArrayList<Set> sets = new ArrayList<Set>();
+		
+		for(int i=0; i<state.length; i++)
+			for(int j=0; j<state[i].length; j++){ // Cycle through each Node in state-space
+				
+				Node n = state[i][j]; // Current reference Node
+				ArrayList<Node> set;
+				
+				if(n.getTeam() == player){ // If node belongs to the player of interest
+					
+					// Vertical Check
+					if(n.getTop() != null)
+						if(n.getTop().getTeam() == player){ // Top matches, could be possible pair. 
+							
+							// Test to make sure pair is not actually a triple or greater.
+							boolean tripple = false;
+							
+							if(n.getTop().getTop() != null)
+								if(n.getTop().getTop().getTeam() == player)
+									tripple = true;
+							
+							if(n.getBottom() != null)
+								if(n.getBottom().getTeam() == player)
+									tripple = true;
+		 
+							
+							set = new ArrayList<Node>(); // Prepare a new AL
+							set.add(n); // Disrupting this add order and others will cause problems in getOpenEndedPairs()
+							set.add(n.getTop());
+							
+							// Check for duplicates
+							if(!setExists(pairs, set) && !tripple){
+								pairs.add(set);
+								sets.add(new Set(set, Set.VERTICAL));
+							}
+						}
+					
+					
+					// Horizontal Check
+					if(n.getLeft().getTeam() == player){ // Left matches, could be possible pair
+						
+						// Test for triples
+						boolean tripple = false;
+						
+						if(n.getLeft().getLeft().getTeam() == player)
+							tripple = true;
+						
+						if(n.getRight().getTeam() == player)
+							tripple = true;
+						
+						set = new ArrayList<Node>();
+						set.add(n);
+						set.add(n.getLeft());
+						
+						if(!setExists(pairs, set) && !tripple){
+							pairs.add(set);
+							sets.add(new Set(set, Set.HORIZONTAL));
+						}
+					}
+					
+					// Left Diagonal Check
+					if(n.getTopLeft() != null)
+						if(n.getTopLeft().getTeam() == player){
+							
+							boolean tripple = false;
+							
+							if(n.getTopLeft().getTopLeft() != null)
+								if(n.getTopLeft().getTopLeft().getTeam() == player)
+									tripple = true;
+							
+							if(n.getBottomRight() != null)
+								if(n.getBottomRight().getTeam() == player)
+									tripple = true;
+							
+							set = new ArrayList<Node>();
+							set.add(n);
+							set.add(n.getTopLeft());
+							
+							if(!setExists(pairs, set) && !tripple){
+								pairs.add(set);
+								sets.add(new Set(set, Set.LEFT_DIAGONAL));
+							}
+							
+						}
+					
+					// Right Diagonal Check
+					if(n.getTopRight() != null)
+						if(n.getTopRight().getTeam() == player){
+							
+							boolean tripple = false;
+							
+							if(n.getTopRight().getTopRight() != null)
+								if(n.getTopRight().getTopRight().getTeam() == player)
+									tripple = true;
+							
+							if(n.getBottomLeft() != null)
+								if(n.getBottomLeft().getTeam() == player)
+									tripple = true;
+							
+							set = new ArrayList<Node>();
+							set.add(n);
+							set.add(n.getTopRight());
+							
+							if(!setExists(pairs, set) && !tripple){
+								pairs.add(set);
+								sets.add(new Set(set, Set.RIGHT_DIAGNONAL));
+							}
+							
+						}
+	
+				} // End if node is same as player
+				
+			} // End cycling through each Node in state-space
+		
+		return sets;
+	}
+	
+	/**
+	 * Checks data for any set of Nodes which contain the same exact nodes in the
+	 * set parameter, disregarding their order of course.
+	 * 
+	 * @param data		List of sets to search in.
+	 * @param set		Set to be found in data.
+	 * @return			True if set is found in data, false if not found.
+	 */
+	public boolean setExists(ArrayList<ArrayList<Node>> data, ArrayList<Node> set){
+		
+		if(data == null || set == null)
 			return false;
 		
-		if(data.isEmpty())
+		if(data.isEmpty() || set.isEmpty())
 			return false;
-		
 		
 		
 		for(int i=0; i<data.size(); i++){ // Cycle through each sequence in list
 			
-			if(data.get(i).size() == sequence.size()){ // If sequences are the same size
+			if(data.get(i).size() == set.size()){ // If sequences are the same size
 				
 				boolean allExist = true; // Assume they all exist in this sequence
 				
-				for(int j=0; j<sequence.size(); j++){ // Cycle through each Node in the sequence to check
+				for(int j=0; j<set.size(); j++){ // Cycle through each Node in the sequence to check
 					
-					if(!nodeExists(data.get(i), sequence.get(j)))
+					if(!nodeExists(data.get(i), set.get(j)))
 						allExist = false; // If Node i in sequence is not found
 					
 				}
@@ -113,7 +546,7 @@ public class StateSpace {
 	 * @return			True if Node with same i,j assignment exists in ArrayList, 
 	 * 					false if not.
 	 */
-	private boolean nodeExists(ArrayList<Node> data, Node node){
+	public boolean nodeExists(ArrayList<Node> data, Node node){
 		
 		if(data == null)
 			return false;
@@ -233,10 +666,17 @@ public class StateSpace {
 	public void expandStateSpace(int depth){
 		
 		expandSS(this, depth);
-		
+		 
+		Interface.print("Expanded " + numberOfStates() + " states.");
 	}
 	
-	public long numberOfStates(){
+	/**
+	 * Counts the number of StateSpaces enumerated as contained in this instance as well as
+	 * all grandchildren and so forth.
+	 * 
+	 * @return	Number of possible state-space enumerations completed.
+	 */
+	public int numberOfStates(){
 		 
 		counter = 0; // Reset
 		count(this);
@@ -244,6 +684,12 @@ public class StateSpace {
 		return counter;
 	}
 	
+	/**
+	 * Recursive method intended to be called by numberOfStates()
+	 * Counts each state-spaces's children and adds it to a class variable.
+	 * 
+	 * @param root		StateSpace to count from. 
+	 */
 	private void count(StateSpace root){
 		
 		if(root.getChildren().isEmpty())
@@ -433,5 +879,35 @@ public class StateSpace {
 		return false;
 
 	} // END adjacentPlayed() 
+	
+	public class Set{
+		
+		//=== CONSTANTS ===
+		public static final int VERTICAL = 0,
+								HORIZONTAL = 1,
+								LEFT_DIAGONAL = 2,
+								RIGHT_DIAGNONAL = 3;
+		
+		public ArrayList<Node> set;
+		public int direction;
+		
+		public Set(ArrayList<Node> set, int direction){
+			
+			this.set = set;
+			this.direction = direction;
+		}
+		
+		public Set(Node x, Node y, Node z, int direction){
+			
+			ArrayList<Node> set = new ArrayList<Node>();
+			set.add(x);
+			set.add(y);
+			set.add(z);
+			this.set = set;
+			this.direction = direction;
+		}
+		
+	
+	}
 	
 }// END STATESPACE

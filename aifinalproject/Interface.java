@@ -412,6 +412,7 @@ public class Interface extends JFrame
 	public static void print(String s) {
 
 		console.append(s + "\n");
+		console.setCaretPosition(console.getText().length());
 
 	}
 

@@ -188,6 +188,8 @@ public class Control {
 			
 			gui.getBoard().repaint(); // Update GUI to reflect move
 			
+		 
+			
 		}
 		
 		// GAME OVER
