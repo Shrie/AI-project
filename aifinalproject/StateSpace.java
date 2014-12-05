@@ -8,13 +8,10 @@ public class StateSpace {
 	
 	//==== CONSTANTS ===
 	public static final int TERMINAL = -1;
-	public static final int HEURISTIC1 = 0;
-	public static final int HEURISTIC2 = 1;
 	
 	//=== VARIABLES ===
 	private Node[][] state;					// Current state in game
 	private ArrayList<StateSpace> children; // Enumerated possibilities  
-	private int minimaxValue;
 	
 	private int counter;	// Used for counting the number of state-spaces in an enumeration
 	
@@ -54,244 +51,6 @@ public class StateSpace {
 	}
 	
 	//=== METHODS ===
-	public void setMinimaxValue(int val){
-		
-		this.minimaxValue = val;
-	}
-	
-	public int getMinimaxValue(){
-		
-		return minimaxValue;
-	}
-	
-    /**
-     * TODO
-     *
-     * @author Mason
-     * @param player	Player character, either PLAYER1 or PLAYER2
-     * @param board 2d char array representing board and moves
-     * @return	TODO
-     */
-    public int heuristic1(char player) {
-
-    	char[][] board = getCharStateSpace();
-    	
-        int rows = board.length;
-        int cols = board[0].length;
-        int score1 = 0;
-        int score2 = 0;
-        char p1 = Control.PLAYER1;
-        char p2 = Control.PLAYER2;
-        int c = 2; //constant for exponentials
-
-        //look for 4s
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if ((curr == board[row][(col + 1) % cols]) && (curr == board[row][(col + 2) % cols]) && (curr == board[row][(col + 3) % cols])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 4);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 4);
-                    }
-                }
-            }
-        }
-
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows - 3; row++) {
-                char curr = board[row][col];
-                if ((curr == board[row + 1][col]) && (curr == board[row + 2][col]) && (curr == board[row + 3][col])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 4);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 4);
-                    }
-                }
-            }
-        }
-
-        for (int row = 0; row < rows - 3; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                
-                if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols]) && (curr == board[row + 3][(col - 3 + cols) % cols])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 4);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 4);
-                    }
-                }
-
-                if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols]) && (curr == board[row + 3][(col - 3 + cols) % cols])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 4);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 4);
-                    }
-                }
-            }
-        }
-
-        //look for 3s
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if ((curr == board[row][(col + 1) % cols]) && (curr == board[row][(col + 2) % cols])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 3);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 3);
-                    }
-                }
-            }
-        }
-
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows - 2; row++) {
-                char curr = board[row][col];
-                if ((curr == board[row + 1][col]) && (curr == board[row + 2][col])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 3);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 3);
-                    }
-                }
-            }
-        }
-
-        for (int row = 0; row < rows - 2; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                
-                if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 3);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 3);
-                    }
-                }
-
-                if ((curr == board[row + 1][(col - 1 + cols) % cols]) && (curr == board[row + 2][(col - 2 + cols) % cols])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 3);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 3);
-                    }
-                }
-            }
-        }
-        
-        //look for 2s
-       for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                if ((curr == board[row][(col + 1) % cols])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 2);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 2);
-                    }
-                }
-            }
-        }
-
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows - 1; row++) {
-                char curr = board[row][col];
-                if ((curr == board[row + 1][col])) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 2);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 2);
-                    }
-                }
-            }
-        }
-
-        for (int row = 0; row < rows - 1; row++) {
-            for (int col = 0; col < cols; col++) {
-                char curr = board[row][col];
-                
-                if (curr == board[row + 1][(col - 1 + cols) % cols]) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 2);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 2);
-                    }
-                }
-
-                if (curr == board[row + 1][(col - 1 + cols) % cols]) {
-                    if (curr == p1) {
-                        score1 += Math.pow(c, 2);
-                    } else if (curr == p2) {
-                        score2 += Math.pow(c, 2);
-                    }
-                }
-            }
-        }
-
-        //maybe change to other values for minimax
-        if (player == p1) {
-            return score1 - score2;
-        } else {
-            return score2 - score1;
-        }
-
-    }// END heuristic1()
-    
-    /**
-     * 
-     * @param player
-     * @return
-     */
-    public int heuristic2(char player){
-    	
-    	char opponent = (player == Control.PLAYER1)? Control.PLAYER2 : Control.PLAYER1;
-    	ArrayList<Node> win = this.checkForWinSequence();
-    	
-    	if(!win.isEmpty())
-    		if(win.get(0).getTeam() == player)
-    			return 10;	// Win for player is present
-    		else if(win.get(0).getTeam() != player)
-    			return -10; // Win for opponent is present
-    	
-    	if(!getOpenTriples(opponent).isEmpty()) // Opponent is one move away from win
-    		return -8;
-    	
-    	if(!getOpenEndedPairs(opponent).isEmpty())
-    		return -7;
-    	
-    	if(!getOpenEndedPairs(player).isEmpty()) // Will solidify a win
-    		 return 8;
-    	 
-    	if(!getOpenTriples(player).isEmpty())
-    		 return 7;
-    	 
-    	if(!getSingleEndedPairs(opponent).isEmpty())
-    		 return -5;
-    	 
-    	if(!getSingleEndedPairs(player).isEmpty())
-    		 return 5;
-    	 
-    	
-    	return 0;
-    	
-    } // END heuristic2()
-	
-	/**
-	 * @return	True if there are no available play locations.
-	 */
-	public boolean checkForDraw(){
-		
-		for(int i=0; i<state.length; i++)
-			for(int j=0; j<state[i].length; j++)
-				if(state[i][j].getTeam() == Control.NONE)
-					return false;
-		
-		return true;
-	}
-	
 	/**
 	 * Gathers triples still with a playable location. Does not gather closed triples.
 	 * Ex. XXNX and XXXN 
@@ -883,7 +642,6 @@ public class StateSpace {
 				
 				System.out.println();
 			}
-		System.out.println();
 	}
 	
 	/**
@@ -959,7 +717,7 @@ public class StateSpace {
 			
 			StateSpace ss = root.copy(); // Copy the state-space
 			
-			char player = (root.player1Turn())? Control.PLAYER1 : Control.PLAYER2; // Determine who's turn
+			char player = (player1Turn())? Control.PLAYER1 : Control.PLAYER2; // Determine who's turn
 			
 			ss.setNode(player, frontier.get(i).i, frontier.get(i).j); // Make that move to the new state-space
 			
