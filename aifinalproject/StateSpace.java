@@ -8,10 +8,13 @@ public class StateSpace {
 	
 	//==== CONSTANTS ===
 	public static final int TERMINAL = -1;
+	public static final int HEURISTIC1 = 1;
+	public static final int HEURISTIC2 = 2;
 	
 	//=== VARIABLES ===
 	private Node[][] state;					// Current state in game
 	private ArrayList<StateSpace> children; // Enumerated possibilities  
+	private int minimaxValue;
 	
 	private int counter;	// Used for counting the number of state-spaces in an enumeration
 	
@@ -51,6 +54,25 @@ public class StateSpace {
 	}
 	
 	//=== METHODS ===
+	public int heuristic1(char player){
+		
+		return 0;
+	}
+	
+	public int heuristic2(char player){
+		
+		return 0;
+	}
+	
+	public void setMinimaxValue(int val){
+		
+		this.minimaxValue = val;
+	}
+	
+	public int getMinimaxValue(){
+		
+		return minimaxValue;
+	}
 	/**
 	 * Gathers triples still with a playable location. Does not gather closed triples.
 	 * Ex. XXNX and XXXN 
@@ -717,7 +739,7 @@ public class StateSpace {
 			
 			StateSpace ss = root.copy(); // Copy the state-space
 			
-			char player = (player1Turn())? Control.PLAYER1 : Control.PLAYER2; // Determine who's turn
+			char player = (root.player1Turn())? Control.PLAYER1 : Control.PLAYER2; // Determine who's turn
 			
 			ss.setNode(player, frontier.get(i).i, frontier.get(i).j); // Make that move to the new state-space
 			
@@ -730,6 +752,19 @@ public class StateSpace {
 			expandSS(root.getChildren().get(i), newDepth);
 		
 	}// END expandSS()
+	
+	/**
+	 * @return	True if there are no available play locations.
+	 */
+	public boolean checkForDraw(){
+		
+		for(int i=0; i<state.length; i++)
+			for(int j=0; j<state[i].length; j++)
+				if(state[i][j].getTeam() == Control.NONE)
+					return false;
+		
+		return true;
+	}
 	
 	/**
 	 * Counts all plays on the board to determine who's turn it is.

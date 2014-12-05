@@ -37,7 +37,8 @@ public class Control {
 	
 	private int scoreToWin,		// Number of games to win to win overall 
 				player1Score,	// Player 1 number of games won
-				player2Score;	// Player 2 number of games won
+				player2Score,	// Player 2 number of games won
+				cycles;
 	
 	//=== CONSTRUCTOR ===
 	public Control() {
@@ -64,6 +65,7 @@ public class Control {
 		// Timer initialization
 		time1 = 0;
 		time2 = 0;
+		cycles = 0;
 
 		// Initialize booleans
 		onFirstMove = true;
@@ -171,6 +173,7 @@ public class Control {
 				
 			}
 			
+			cycles++;
 			
 			// Check for a win
 			winSequence = stateSpace.checkForWinSequence();
@@ -186,9 +189,15 @@ public class Control {
 				onFirstMove = true;
 			}
 			
-			gui.getBoard().repaint(); // Update GUI to reflect move
+			// Check for draw
+			if(stateSpace.checkForDraw()){
+				
+				stateSpace.reset();
+				onFirstMove = true;
+				gui.setPrompt("Draw!");
+			}
 			
-		 
+			gui.getBoard().repaint(); // Update GUI to reflect move
 			
 		}
 		
