@@ -19,6 +19,21 @@ public class StateSpace {
 	private int counter;	// Used for counting the number of state-spaces in an enumeration
 	
 	//=== CONSTRUCTORS ===
+	public StateSpace(String state){
+		
+		Node[][] copy = new Node[state.length() / 12][12];
+		
+		int index = 0;
+		for(int i=0; i<copy.length; i++)
+			for(int j=0; j<copy[i].length; j++, index++)
+				copy[i][j] = new Node(state.charAt(index), i, j);
+		
+		this.state = copy;
+		
+		this.children = new ArrayList<StateSpace>();
+		//linkNodes();
+	}
+	
 	/**
 	 * Creates stateSpace out of Node matrix. 
 	 * Links Nodes to form graph.
@@ -47,13 +62,29 @@ public class StateSpace {
 			for(int j=0; j<copy[i].length; j++)
 				copy[i][j] = new Node(state[i][j], i, j); // Copy data from char[][]
 		
-		this.state = copy;
+		this.state = copy; 
 		this.children = new ArrayList<StateSpace>();
 		
 		linkNodes(); // Forms graph
 	}
 	
 	//=== METHODS ===
+	
+	public String getState(){
+		
+		String st = "";
+		
+		for(int i=0; i<state.length; i++)
+			for(int j=0; j<state[i].length; j++)
+				st = st + state[i][j].getTeam();
+		
+		return st;
+	}
+	
+	public void setChildren(ArrayList<StateSpace> c){
+		
+		this.children = c;
+	}
 	
 	public boolean checkForDraw(){
 		
@@ -272,22 +303,87 @@ public class StateSpace {
     	
     	char opponent = (player == Control.PLAYER1)? Control.PLAYER2 : Control.PLAYER1;
     	
-    	if(!checkForWinSequence().isEmpty()) // You win this turn
-    		return 5;
+    	ArrayList<Node> win = checkForWinSequence();
     	
-    	if(!getOpenTriples(opponent).isEmpty()) // Opponent is one move away from a win
-    		return -4;
+    	if(!win.isEmpty()){
+    		if(win.get(0).getTeam() == opponent) // You loose
+    			return -3;
     	
-    	if(!getOpenEndedPairs(opponent).isEmpty()) // Opponent confirms a win in two moves
+    		if(win.get(0).getTeam() == player) // You win
+    			return 3;
+    	}
+    	
+    	// If after you move there exists open triples for the enemy, you lose
+    	if(!getOpenEndedTriples(opponent).isEmpty())
+    		return -3;
+ 
+    	if(!getOpenTriples(opponent).isEmpty())
     		return -3;
     	
-    	if(!getOpenEndedPairs(player).isEmpty()) // You confirm a win in two moves
+    	// If after you move you leave an open ended triples, you win
+    	if(!getOpenEndedTriples(player).isEmpty())
     		return 3;
     	
+    	if(!getOpenEndedPairs(opponent).isEmpty())
+    		return -2;
+    	
+    	if(!getOpenEndedPairs(player).isEmpty())
+    		return 2;
+    	
+    	if(!getOpenEndedTriples(player).isEmpty())
+    		return 2;
     	
     	return 0;
     }
     
+   public ArrayList<Set> getOpenEndedTriples(char player){
+	   
+	   ArrayList<Set> trips = getTriples(player);
+	   ArrayList<Set> oet = new ArrayList<Set>();
+	   
+	   for(int i=0; i<trips.size(); i++){
+		   
+		   Node first = trips.get(i).set.get(0);
+		   Node third = trips.get(i).set.get(2);
+		   
+		   switch(trips.get(i).direction){
+		   case Set.VERTICAL:
+			   try{
+				   if(first.getBottom().getTeam() == Control.NONE 
+				   		&& third.getTop().getTeam() == Control.NONE)
+					   		oet.add(trips.get(i));
+				   
+			   }catch(NullPointerException e){}
+			   break;
+			   
+		   case Set.HORIZONTAL:
+			   if(first.getLeft().getTeam() == Control.NONE
+				    && third.getRight().getTeam() == Control.NONE)
+				   		oet.add(trips.get(i));
+			   break;
+			   
+		   case Set.LEFT_DIAGONAL:
+			   	try{
+				   if(first.getTopLeft().getTeam() == Control.NONE
+						&& third.getBottomRight().getTeam() == Control.NONE)
+					   		oet.add(trips.get(i));
+				   
+			   	}catch(NullPointerException e){}
+			   break;
+			   
+		   case Set.RIGHT_DIAGNONAL:
+			   try{
+				   if(first.getTopRight().getTeam() == Control.NONE
+						 && third.getBottomLeft().getTeam() == Control.NONE)
+					   oet.add(trips.get(i));
+				   
+			   }catch(NullPointerException e){}
+		   }
+	   }
+	   
+	   return oet;
+	   
+   } // END getOpenEndedTriples()
     
     
 	/**
@@ -299,13 +395,28 @@ public class StateSpace {
 	 */
 	public ArrayList<Set> getOpenTriples(char player){
 		
-		ArrayList<Set> trips = new ArrayList<Set>();
+		ArrayList<Set> trips = getTriples(player);
 		ArrayList<Set> spec = getSpecialCases(player);
 		
 		for(int i=0; i<spec.size(); i++) 
 			if(spec.get(i).set.size() == 3)
 				trips.add(spec.get(i)); // Add all the triples from special cases
 										// XXNX special open trip
+		
+		return trips;
+		
+	} // END getOpenTriples()
+	
+	/**
+	 * Gathers triples with at least one playable location.
+	 * Ex. XXXN
+	 * 
+	 * @param player	Player to gather for.
+	 * @return			List of triples with at least one playable location.
+	 */
+	private ArrayList<Set> getTriples(char player){
+		
+		ArrayList<Set> trips = new ArrayList<Set>();
 		
 		for(int i=0; i<state.length; i++)
 			for(int j=0; j<state[i].length; j++){ // Cycle through each node in SS
@@ -381,7 +492,7 @@ public class StateSpace {
 		
 		return trips;
 		
-	} // END getOpenTriples()
+	} // END getTriples()
 	
 	/**
 	 * Gathers single-ended pairs.
@@ -882,8 +993,6 @@ public class StateSpace {
 				System.out.println();
 			}
 		
-		System.out.println("H:" + this.heuristic1(Control.PLAYER2) + " M:" + this.getMinimaxValue());
-		
 		System.out.println();
 	}
 	
@@ -909,7 +1018,7 @@ public class StateSpace {
 		
 		expandSS(this, depth);
 		 
-		Interface.print("Expanded " + numberOfStates() + " states.");
+
 	}
 	
 	/**

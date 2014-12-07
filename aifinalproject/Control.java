@@ -1,5 +1,9 @@
 package aifinalproject;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -39,6 +43,8 @@ public class Control {
 				player1Score,	// Player 1 number of games won
 				player2Score;	// Player 2 number of games won
 	
+	private BufferedWriter dump;
+	
 	//=== CONSTRUCTOR ===
 	public Control() {
 
@@ -50,16 +56,19 @@ public class Control {
 		// Have one constructor that has no parameters to work as a 
 		// somewhat 'generic' instance which is only used to populate the
 		// option pane and name for the ComboBox
+		agents1.add(new Heuristics());
+		agents1.add(new Classifier());
 		agents1.add(new Human());
 		agents1.add(new Randy());
-		agents1.add(new Heuristics());
 		
+		
+		agents2.add(new Heuristics());
+		agents2.add(new Classifier());
 		agents2.add(new Human());
 		agents2.add(new Randy());
-		agents2.add(new Heuristics());
 		
 		// Initialize GUI
-		gui = new Interface(800, 500, agents1, agents2);
+		gui = new Interface(830, 540, agents1, agents2);
 
 		// Timer initialization
 		time1 = 0;
@@ -77,6 +86,18 @@ public class Control {
 	} // END CONSTRUCTOR
 
 	//=== METHODS ===	
+	public void setDumpFile(File d){
+		
+		try {
+			dump = new BufferedWriter(new FileWriter(d));
+			
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * 
 	 * @return		The GUI Interface
@@ -181,11 +202,31 @@ public class Control {
 			
 			if(!winSequence.isEmpty()){ // If a win exists
 				
-				if(winSequence.get(0).getTeam() == Control.PLAYER1)
+				if(winSequence.get(0).getTeam() == Control.PLAYER1){
+					
 					gui.updatePlayer1Score(++player1Score);
-				else
+					
+					try {
+						dump.write(stateSpace.getState() + "X\n");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				} else {
+					
 					gui.updatePlayer2Score(++player2Score);
 					
+					try {
+						dump.write(stateSpace.getState() + "O\n");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+				
+				
 				stateSpace.reset();
 				onFirstMove = true;
 				p1 = true;
@@ -207,6 +248,13 @@ public class Control {
 		// GAME OVER
 		gameOver = true;
 		gui.setPrompt("GAME OVER!");
+		try {
+			dump.flush();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	} // END playGame()
 	

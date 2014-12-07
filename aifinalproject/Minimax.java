@@ -23,38 +23,42 @@ public class Minimax {
 
 	public StateSpace decideMove(StateSpace ss){
 		
-		ss.expandStateSpace(depth); // Expand root
-				
-		if(depth == 1)
-			return max(ss.getChildren());
+		expand(ss, depth);
 		
-		populateValues(0, ss);
-				
-		return maxMV(ss.getChildren()).copy(); 
+		return maxMV(ss.getChildren());
 	}
 	
-	private void populateValues(int currentDepth, StateSpace ss){
+	private void expand(StateSpace root, int current){
 		
-		if(currentDepth == depth - 1){ // At the bottom
-			
-			int h = (currentDepth % 2 == 0)? 
-					min(ss.getChildren()).getMinimaxValue() 
-					: max(ss.getChildren()).getMinimaxValue();
-					
-					
-			ss.setMinimaxValue(h);
-			
-		} else {
+		ArrayList<Node> frontier = root.frontier(); // Grab all valid move locations
 		
-			for(int i=0; i<ss.getChildren().size(); i++)
-				populateValues(currentDepth + 1, ss.getChildren().get(i));
-			
-			if(currentDepth % 2 == 0)
-				ss.setMinimaxValue( minMV(ss.getChildren()).getMinimaxValue() );
-			else
-				ss.setMinimaxValue( maxMV(ss.getChildren()).getMinimaxValue() );
+		if(frontier.isEmpty() || current == 0) // Base case, return
+			return;
 		
+		char player = (root.player1Turn())? Control.PLAYER1 : Control.PLAYER2; // Decide who's move it is
+		
+		for(int i=0; i<frontier.size(); i++){ // For all valid move locations
+			
+			StateSpace copy = root.copy(); 	// Grab a copy of the current game space
+			copy.setNode(player, frontier.get(i).i, frontier.get(i).j); // Enumerate a move
+			
+			// TODO Pruning
+			if(depth == 1 && heuristic == StateSpace.HEURISTIC1)
+				copy.setMinimaxValue(copy.heuristic1(player));
+			else if(depth == 1 && heuristic == StateSpace.HEURISTIC2)
+				copy.setMinimaxValue(copy.heuristic2(player));
+			
+			root.getChildren().add(copy);
 		}
+		
+		if(maximizer == player)
+			root.setMinimaxValue( maxMV(root.getChildren()).getMinimaxValue() );
+		else
+			root.setMinimaxValue( minMV(root.getChildren()).getMinimaxValue() );
+		
+		for(int i=0; i<root.getChildren().size(); i++)
+			expand(root.getChildren().get(i), current - 1);
+		
 	}
 	
 	private StateSpace minMV(ArrayList<StateSpace> neighbors){
@@ -72,12 +76,12 @@ public class Minimax {
 		
 		StateSpace maxSS = neighbors.get(new Random().nextInt(neighbors.size()));
 		
-		for(int i=0; i<neighbors.size(); i++){
-			neighbors.get(i).printStateSpace();
+		for(int i=0; i<neighbors.size(); i++)			
 			if(neighbors.get(i).getMinimaxValue() > maxSS.getMinimaxValue())
 				maxSS = neighbors.get(i);
-		}
-	
+		
+		maxSS = maxSS.copy();
+		
 		return maxSS;
 	}
 	

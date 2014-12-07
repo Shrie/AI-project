@@ -12,6 +12,7 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -28,6 +29,8 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
+
+import aifinalproject.FileManager.AFile;
 
 /**
  * Manages the graphical interface.
@@ -70,6 +73,8 @@ public class Interface extends JFrame
 							 player2Agents; // All available agents for player 2
 											// Needed to provide JPanels for Agent options
 											// as well as their names for the ComboBoxes
+	
+	private JComboBox<File> files;
 
 	//=== CONSTRUCTOR ===
 	/**
@@ -254,8 +259,17 @@ public class Interface extends JFrame
 				.setHorizontalAlignment(JTextField.CENTER);
 		rings.setValue((int) 4);
 		rings.setBorder(BorderFactory.createTitledBorder("Number of Rings"));
-
-		info.add(new JLabel("")); //Space
+		
+		// DUMP DATA
+		ArrayList<AFile> f = new FileManager().getClassiferFiles();
+		info.add(files = new JComboBox<File>());
+		for(int i=0; i<f.size(); i++)
+			files.addItem(f.get(i));
+		if(f.size() > 1)
+			files.setSelectedIndex(1);
+		files.setBorder(BorderFactory.createTitledBorder("Dump Results To"));
+		
+		info.add(new JLabel());
 
 		info.add(start = new JButton("Start!"));
 		start.setBackground(Color.gray);
@@ -371,6 +385,7 @@ public class Interface extends JFrame
 			rings.setEnabled(false);
 			agent1Select.setEnabled(false);
 			agent2Select.setEnabled(false);
+			files.setEnabled(false);
 			
 			// Show console
 			cards.show(options, "console");
@@ -379,13 +394,17 @@ public class Interface extends JFrame
 			final Agent play1 = player1Agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
 			final Agent play2 = player2Agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
 			
+			// Set File to dump classifier data into
+			Control.instance.setDumpFile((File) files.getSelectedItem()); 
+
+			
 			//=== START GAME THREAD ===
 			new Thread(){
 				public void run(){
 					Control.instance.playGame(play1, play2);
 				}
 			}.start();
-			
+		
 
 		} else if (e.getActionCommand().equals("agent1SelectSelect")) {
 			// Selecting Agent 1, populating its options
