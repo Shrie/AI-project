@@ -260,9 +260,9 @@ public class StateSpace {
 
         //maybe change to other values for minimax
         if (player == p1) {
-            return score1 - score2;
+            return (score1 - score2);
         } else {
-            return score2 - score1;
+            return (score2 - score1);
         }
 
     }// END heuristic1()
