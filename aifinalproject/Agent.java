@@ -16,7 +16,7 @@ public interface Agent {
 	 * Uses the static Control.stateSpace to make a decision then 
 	 * modifies the Control.stateSpace to reflect that play. 
 	 */
-	public void makeMove();
+	public StateSpace makeMove(StateSpace in);
 
 	/**
 	 * @return		A panel which allows users to modify all options for this

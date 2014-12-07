@@ -62,16 +62,17 @@ public class Heuristics implements Agent {
     }
 
     @Override
-    public void makeMove() {
+    public StateSpace makeMove(StateSpace in) {
 
     	try {
 			Thread.sleep(delay * 1000);
+			
 		} catch (InterruptedException e) {
 			Interface.print("Agent Sleep Interrupted!");
 		}
  
     	
-    	Control.instance.stateSpace = mm.decideMove(Control.instance.stateSpace);
+    	return mm.decideMove(in);
     	
     }
 

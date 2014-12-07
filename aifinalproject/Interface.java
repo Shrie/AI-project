@@ -116,6 +116,26 @@ public class Interface extends JFrame
 		return board;
 	}
 	
+	private void reset(){
+		
+		player1Time.setText("00:00:00");
+		player2Time.setText("00:00:00");
+		player1Score.setText("0");
+		player2Score.setText("0"); 
+		agent1Select.setEnabled(true);
+		agent2Select.setEnabled(true);
+		scoreToWin.setEnabled(true);
+		rings.setEnabled(true);
+		files.setEnabled(true);
+		start.setText("Start!");
+	}
+	
+	public void restart(){
+		
+		start.setEnabled(true);
+		start.setText("Reset");
+	}
+	
 	//=== GUI INITIALIZATION ===
 	/**
 	 * Creates and centers frame on screen.
@@ -374,37 +394,44 @@ public class Interface extends JFrame
 		if (e.getActionCommand().equals("start")) {
 			// Starting the game
 
-			board.build((int) rings.getValue()); // Build board
+			if(start.getText().equals("Start!")){
+				board.build((int) rings.getValue()); // Build board
+				
+				// Set score to win
+				Control.instance.setScoreToWin((int) scoreToWin.getValue());
+				
+				// Lock options down
+				start.setEnabled(false);
+				scoreToWin.setEnabled(false);
+				rings.setEnabled(false);
+				agent1Select.setEnabled(false);
+				agent2Select.setEnabled(false);
+				files.setEnabled(false);
+				
+				// Show console
+				cards.show(options, "console");
+				
+				// Create new Agents to start playing
+				final Agent play1 = player1Agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
+				final Agent play2 = player2Agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
+				
+				// Set File to dump classifier data into
+				Control.instance.setDumpFile((File) files.getSelectedItem()); 
+	
+				
+				//=== START GAME THREAD ===
+				new Thread(){
+					public void run(){
+						Control.instance.playGame(play1, play2);
+					}
+				}.start();
+				
+			}else{
+				
+				reset();
+				cards.show(options, "options");
+			}
 			
-			// Set score to win
-			Control.instance.setScoreToWin((int) scoreToWin.getValue());
-			
-			// Lock options down
-			start.setEnabled(false);
-			scoreToWin.setEnabled(false);
-			rings.setEnabled(false);
-			agent1Select.setEnabled(false);
-			agent2Select.setEnabled(false);
-			files.setEnabled(false);
-			
-			// Show console
-			cards.show(options, "console");
-			
-			// Create new Agents to start playing
-			final Agent play1 = player1Agents.get(agent1Select.getSelectedIndex()).createNew(Control.PLAYER1);
-			final Agent play2 = player2Agents.get(agent2Select.getSelectedIndex()).createNew(Control.PLAYER2);
-			
-			// Set File to dump classifier data into
-			Control.instance.setDumpFile((File) files.getSelectedItem()); 
-
-			
-			//=== START GAME THREAD ===
-			new Thread(){
-				public void run(){
-					Control.instance.playGame(play1, play2);
-				}
-			}.start();
-		
 
 		} else if (e.getActionCommand().equals("agent1SelectSelect")) {
 			// Selecting Agent 1, populating its options

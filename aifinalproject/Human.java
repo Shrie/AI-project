@@ -30,7 +30,10 @@ public class Human implements Agent {
 	 * Game turns are instead handled by Control and Board.
 	 */
 	@Override
-	public void makeMove() {}
+	public StateSpace makeMove(StateSpace in) {
+		
+		return null;
+	}
 
 	@Override
 	public JPanel createOptionPane() {

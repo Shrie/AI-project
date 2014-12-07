@@ -51,11 +51,11 @@ public class Classifier implements Agent {
 	}
 
 	@Override
-	public void makeMove() {
+	public StateSpace makeMove(StateSpace in) {
 		
-		Control.instance.stateSpace.expandStateSpace(1);
+		in.expandStateSpace(1);
 		
-		ArrayList<StateSpace> poss = Control.instance.stateSpace.getChildren();
+		ArrayList<StateSpace> poss = in.getChildren();
 		
 		StateSpace move = poss.get(new Random().nextInt(poss.size() - 1));
 		
@@ -77,9 +77,10 @@ public class Classifier implements Agent {
 			
 			int supportingStates = 0;
 			
-			for(int j=0; j<top5.length; j++)
-				if(top5[j].winFor == player)
-					supportingStates++;
+			if(top5[0] != null)
+				for(int j=0; j<top5.length; j++)
+					if(top5[j].winFor == player)
+						supportingStates++;
 			
 			if(supportingStates > (threshold - 1) / 2){
 				move = poss.get(i);
@@ -89,7 +90,7 @@ public class Classifier implements Agent {
 		}
 		
 		
-		Control.instance.stateSpace = move;
+		return move;
 
 	}
 
@@ -99,7 +100,7 @@ public class Classifier implements Agent {
 		JPanel p = new JPanel(new GridLayout(0,1));
 		
 		p.setBorder(BorderFactory.createLineBorder(Color.RED));
-		p.add(new JLabel("Classifier", JLabel.CENTER));
+		p.add(new JLabel("K-NN Classifier", JLabel.CENTER));
 		
 		p.add(input = new JComboBox<File>());
 		for(int i=0; i<files.size(); i++)
@@ -108,7 +109,7 @@ public class Classifier implements Agent {
 		input.setBorder(BorderFactory.createTitledBorder("Select Database"));
 	
 		p.add(thresh = new JSpinner(new SpinnerNumberModel(5, 3, 51, 2)));
-		thresh.setBorder(BorderFactory.createTitledBorder("States To Consider"));
+		thresh.setBorder(BorderFactory.createTitledBorder("Nearest Neighbors"));
 		((DefaultEditor) thresh.getEditor()).getTextField()
 			.setHorizontalAlignment(JTextField.CENTER);
 		((DefaultEditor) thresh.getEditor()).getTextField().setEditable(false);

@@ -1014,11 +1014,11 @@ public class StateSpace {
 	 * 
 	 * @param depth
 	 */
-	public void expandStateSpace(int depth){
+	public ArrayList<StateSpace> expandStateSpace(int depth){
 		
 		expandSS(this, depth);
 		 
-
+		return this.children;
 	}
 	
 	/**

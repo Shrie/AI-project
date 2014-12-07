@@ -33,8 +33,6 @@ public class Control {
 				   isPlayer2Human, // Is team2 a human
 				   gameOver,	   // True when game is over, turns off timer thread
 				   onFirstMove;    // Is the game on the first move?
-
-	private Thread timer; // Start/stop timer
 	
 	private long time1, // Player 1 time in 1/60th seconds
 				 time2; // Player 2 time in 1/60th seconds
@@ -78,10 +76,7 @@ public class Control {
 		onFirstMove = true;
 		isPlayer1Human = false;
 		isPlayer2Human = false;
-		gameOver = false;
 		
-		// Create timer thread
-		createTimer();
 
 	} // END CONSTRUCTOR
 
@@ -115,15 +110,21 @@ public class Control {
 		
 		scoreToWin = score;
 	}
-	
-	/**
-	 * Initializes a thread which loops every 1/60th of a second and adds a unit of time
-	 * to whichever player is currently making a move. Also updates each player's Time label
-	 * in the GUI. Only stops when .stop() is called.
-	 */
-	private void createTimer() {
 
-		timer = new Thread() { 
+
+	/**
+	 * Game loop found here. Keeps calling agents makeMove() until
+	 * a win is discovered.
+	 * 
+	 * @param: agent1		Player 1 agent
+	 * @param: agent2		Player 2 agent
+	 */
+	public void playGame(Agent agent1, Agent agent2){
+
+		ArrayList<Node> winSequence;
+		gameOver = false;
+		
+		new Thread() { 
 			public void run() {
 				while (!gameOver) {
 
@@ -141,24 +142,7 @@ public class Control {
 					}
 				}
 			}
-		};
-		
-	} // END createTimer();
-
-
-	/**
-	 * Game loop found here. Keeps calling agents makeMove() until
-	 * a win is discovered.
-	 * 
-	 * @param: agent1		Player 1 agent
-	 * @param: agent2		Player 2 agent
-	 */
-	public void playGame(Agent agent1, Agent agent2){
-
-		ArrayList<Node> winSequence;
-		
-		// Start timer
-		timer.start();
+		}.start();
 		
 		// Check for human agents
 		if(agent1.getName().contains("Human"))
@@ -180,7 +164,7 @@ public class Control {
 				if(isPlayer1Human)
 					humanPlay();
 				else
-					agent1.makeMove();
+					stateSpace = agent1.makeMove(stateSpace);
 				
 				onFirstMove = false; // A move has been made
 				p1 = false;
@@ -191,7 +175,7 @@ public class Control {
 				if(isPlayer2Human)
 					humanPlay();
 				else
-					agent2.makeMove();
+					stateSpace = agent2.makeMove(stateSpace);
 				
 				p1 = true;
 			}
@@ -248,6 +232,14 @@ public class Control {
 		// GAME OVER
 		gameOver = true;
 		gui.setPrompt("GAME OVER!");
+		gui.restart();
+		player1Score = 0;
+		player2Score = 0;
+		time1 = 0;
+		time2 = 0;
+		isPlayer1Human = false;
+		isPlayer2Human = false;
+		
 		try {
 			dump.flush();
 			
@@ -255,6 +247,7 @@ public class Control {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		
 	} // END playGame()
 	
