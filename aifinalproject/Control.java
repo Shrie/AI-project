@@ -58,12 +58,14 @@ public class Control {
 		agents1.add(new Classifier());
 		agents1.add(new Human());
 		agents1.add(new Randy());
+                agents1.add(new NeuralNet());
 		
 		
 		agents2.add(new Heuristics());
 		agents2.add(new Classifier());
 		agents2.add(new Human());
 		agents2.add(new Randy());
+                agents2.add(new NeuralNet());
 		
 		// Initialize GUI
 		gui = new Interface(830, 540, agents1, agents2);

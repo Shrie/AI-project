@@ -31,6 +31,9 @@ public class NeuralNet implements Agent {
     double rate;
     double lambda;
     boolean training;
+    int gameNumber; //possible to use modified sigmoid function for curve when changing lambda
+    ArrayList<char[][]> moveList; //to save board states when training
+    ArrayList<Double[]> outputLog; //to savee output value when training
 
     /**
      * THEORY: inputs will have value -1 for opponent's char, 0 for empty, and
@@ -49,12 +52,13 @@ public class NeuralNet implements Agent {
         hidden_output = new double[hidden.length][output.length];
 
         training = true;
-        
+
         lambda = 1.0; // decreases over time
         rate = 0.5; //remains static
         player = 'X'; // for now
-        // continue contructor as needed
-        
+        outputLog = new ArrayList();
+        moveList = new ArrayList();
+        // continue contructor as needed        
     }
 
     public void updateWeights(double score) {
@@ -85,10 +89,34 @@ public class NeuralNet implements Agent {
     /**
      * Uses the static Control.stateSpace to make a decision then modifies the
      * Control.stateSpace to reflect that play.
+     *
+     * @param in
+     * @return
      */
     @Override
-    public void makeMove() {
-
+    public StateSpace makeMove(StateSpace in) {
+        player = in.player1Turn() ? Control.PLAYER1 : Control.PLAYER2;
+        StateSpace best = null;
+        double high = -100;
+        //looks ahead one turn
+        ArrayList<StateSpace> nextTurn = in.expandStateSpace(1);
+        //gets list of valid moves
+        for (StateSpace ss : nextTurn) {
+            //evaluates each move, stores highest value move
+            char[][] board = ss.getCharStateSpace();
+            updateInput(board);
+            sumValues();
+            if (output[0] >= high) {
+                high = output[0];
+                best = ss;
+            }
+        }
+        // if training boolean is true, use train method
+        if (training && (best != null)) {
+            train(best);
+        }
+        //returns high move
+        return best;
     }
 
     /**
@@ -97,27 +125,12 @@ public class NeuralNet implements Agent {
      */
     @Override
     public JPanel createOptionPane() {
-        JPanel p = new JPanel(new GridLayout(0,1));
-		p.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-		
-		p.add(new JLabel("Randy the Randomizer", JLabel.CENTER));
-		
-//		del = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
-//		del.setBorder(BorderFactory.createTitledBorder("Delay (seconds)"));
-//		((JSpinner.DefaultEditor) del.getEditor()).getTextField()
-//			.setHorizontalAlignment(JTextField.CENTER);
-//		((JSpinner.DefaultEditor) del.getEditor()).getTextField().setEditable(false);
-//		
-//		p.add(new JLabel());
-//		
-//		p.add(legal = new JCheckBox("Only Legal Moves"));
-//		legal.setSelected(true);
-//		
-//		p.add(del);
-		p.add(new JLabel());
+        JPanel p = new JPanel(new GridLayout(0, 1));
+        p.setBorder(BorderFactory.createLineBorder(Color.YELLOW));
 
-		
-		return p;
+        p.add(new JLabel("TD Neural Net", JLabel.CENTER));
+
+        return p;
     }
 
     public void updateInput(char[][] board) {
@@ -155,31 +168,40 @@ public class NeuralNet implements Agent {
         }
     }
 
-    public void train(ArrayList<char[][]> sequence, int expectedValue) {
-        //create log for holding evaluation values
-        ArrayList<Double[]> log = new ArrayList();
+    public void train(StateSpace in) {
+        char[][] board = in.getCharStateSpace();
+        //apply new board state to input nodes
+        updateInput(board);
+        //feed inputs forward through neural net
+        sumValues();
+        Double[] copyScore = new Double[output.length]; //capitol for object rather than primitive
+        char[][] copyBoard = new char[board.length][board[0].length];
 
-        for (int i = 0; i < sequence.size(); i++) {
-            char[][] board = sequence.get(i);
-            updateInput(board);
-            sumValues();
-
-            Double[] copy = new Double[output.length]; //capitol for object rather than primitive
-            for (int j = 0; j < copy.length; j++) {
-                copy[i] = output[j];
-            }
-            log.add(copy);
+        //add current board state and output to ArrayLists
+        for (int i = 0; i < copyScore.length; i++) {
+            copyScore[i] = output[i];
         }
+        for (int i = 0; i < copyBoard.length; i++) {
+            for (int j = 0; j < copyBoard[0].length; j++) {
+                copyBoard[i][j] = board[i][j];
+            }
+        }
+        outputLog.add(copyScore);
+        moveList.add(copyBoard);
 
-        //calculate update value?
-        int logSize = log.size();
+        //calculate weight update value
+        int logSize = outputLog.size();
         double sum = 0;
 
         for (int i = 0; i <= logSize; i++) {
-            sum += Math.pow(lambda, logSize - i) * (log.get(i)[0] * (1 - log.get(i)[0]));
+            sum += Math.pow(lambda, logSize - i) * (outputLog.get(i)[0] * (1 - outputLog.get(i)[0]));
         }
-
-        double weightChange = rate * (log.get(logSize)[0] - log.get(logSize)[0] - 1) * sum;
-        updateWeights(weightChange);
+        double weightChange;
+        if (in.checkForWinSequence().isEmpty()) {
+            weightChange = rate * (outputLog.get(logSize)[0] - outputLog.get(logSize - 1)[0]) * sum;
+        } else {
+            weightChange = rate * (1 - outputLog.get(logSize - 1)[0]) * sum;
+        }
+        updateWeights(weightChange); //apply weight change to all nodes
     }
 }
