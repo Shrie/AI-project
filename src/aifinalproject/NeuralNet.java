@@ -57,7 +57,7 @@ public class NeuralNet implements Agent {
                 input_hidden[i][j] = 10 * Math.random() - 5;
             }
         }
-        System.out.println("BREAK");
+        //System.out.println("BREAK");
         training = true;
         inProgress = false;
 
@@ -104,7 +104,9 @@ public class NeuralNet implements Agent {
     @Override
     public StateSpace makeMove(StateSpace in) {
         if (training) {
-            trainingLoop(10000);
+            Control.instance.getInterface().setPrompt("Training...");
+            trainingLoop(1);
+            Control.instance.getInterface().setPrompt("");
         }
         player = in.player1Turn() ? Control.PLAYER1 : Control.PLAYER2;
         StateSpace best = null;
@@ -117,9 +119,13 @@ public class NeuralNet implements Agent {
             char[][] board = ss.getCharStateSpace();
             updateInput(board);
             sumValues();
-            if (output[0] >= high) {
+            if (output[0] > high) {
                 high = output[0];
                 best = ss;
+            } else if (output[0] == high) {
+                if (Math.random() < 0.1) {
+                    best = ss;
+                }
             }
         }
         // if training boolean is true, use train method
@@ -192,21 +198,20 @@ public class NeuralNet implements Agent {
         int gamesComplete = 0;
         training = false;
         inProgress = true;
-        System.out.println("Input Weights");
-        for (int i = 0; i < input.length; i++) {
-            for (int j = 0; j < hidden.length; j++) {
-                input_hidden[i][j] = 10 * Math.random() - 5;
-                System.out.println(input_hidden[i][j]);
-            }
-        }
-        
-        
+//        System.out.println("Input Weights");
+//        for (int i = 0; i < input.length; i++) {
+//            for (int j = 0; j < hidden.length; j++) {
+//                input_hidden[i][j] = 10 * Math.random() - 5;
+//                System.out.println(input_hidden[i][j]);
+//            }
+//        }
+
         System.out.println("entering training loop");
         while (gamesComplete < gameNumber) {
             moveList.clear();
             outputLog.clear();
             char[][] board = new char[4][12];
-            System.out.println(gamesComplete);
+            //System.out.println(gamesComplete);
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 12; j++) {
                     board[i][j] = ' ';
@@ -221,17 +226,17 @@ public class NeuralNet implements Agent {
                 if ((ss.checkForWinSequence().size() > 1) || (ss.checkForDraw())) {
                     gameOver = true;
                     gamesComplete++;
-                    lambda = lambda * (1 - (gamesComplete/gameNumber));
+                    lambda = lambda * (1 - (gamesComplete / gameNumber));
                 }
             }
         }
-        System.out.println("Output Weights");
-        for (int i = 0; i < input.length; i++) {
-            for (int j = 0; j < hidden.length; j++) {
-                input_hidden[i][j] = 10 * Math.random() - 5;
-                System.out.println(input_hidden[i][j]);
-            }
-        }
+//        System.out.println("Output Weights");
+//        for (int i = 0; i < input.length; i++) {
+//            for (int j = 0; j < hidden.length; j++) {
+//                input_hidden[i][j] = 10 * Math.random() - 5;
+//                System.out.println(input_hidden[i][j]);
+//            }
+//        }
     }
 
     public void train(StateSpace in) {
