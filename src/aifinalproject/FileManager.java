@@ -3,6 +3,8 @@ package aifinalproject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -19,7 +21,25 @@ public class FileManager {
 		
 	}
 	
+	public FileManager(File data){
+		
+		this.data = data;
+	}
 	
+	public void writeOut(String text){
+		
+		try {
+			w = new BufferedWriter(new FileWriter(data));
+			
+			w.write(text);
+			w.flush();
+			w.close();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	public ArrayList<AFile> getClassiferFiles(){
 		

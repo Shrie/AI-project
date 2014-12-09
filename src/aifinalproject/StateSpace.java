@@ -307,10 +307,10 @@ public class StateSpace {
     	
     	if(!win.isEmpty()){
     		if(win.get(0).getTeam() == opponent) // You loose
-    			return -3;
+    			return -5;
     	
     		if(win.get(0).getTeam() == player) // You win
-    			return 3;
+    			return 5;
     	}
     	
     	// If after you move there exists open triples for the enemy, you lose
@@ -941,7 +941,11 @@ public class StateSpace {
 				n[i][j] =  new Node(state[i][j].getTeam(), state[i][j].x, state[i][j].y, i, j);
 			
 		
-		return new StateSpace(n);
+		StateSpace ss = new StateSpace(n);
+		ss.setMinimaxValue(this.getMinimaxValue());
+		
+		
+		return ss;
 	}
 	
 	/**
@@ -992,8 +996,24 @@ public class StateSpace {
 				
 				System.out.println();
 			}
-		
+		System.out.println("Minimax Value: " + this.getMinimaxValue() + " H: " + this.heuristic2(Control.PLAYER2));
 		System.out.println();
+	}
+	
+	public String toString(){
+		
+		String st = "";
+		
+		if(state != null)
+			for(int i=0; i<state.length; i++){
+				for(int j=0; j<state[i].length; j++)
+					st = st + ("[" + state[i][j].getTeam() + "]");
+				
+				st = st + "\n";
+			}
+		st = st + "Minimax Value: " + this.getMinimaxValue() + " H: " + this.heuristic2(Control.PLAYER2);
+		
+		return st;
 	}
 	
 	/**
