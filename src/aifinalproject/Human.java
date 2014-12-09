@@ -41,12 +41,13 @@ public class Human implements Agent {
 		JPanel p = new JPanel(); // Panel to return
 		
 		p.add(new JLabel());
-		p.add(new JLabel("Human Options"));
+		p.add(new JLabel("Human Agent"));
 		p.setBorder(BorderFactory.createLineBorder(Color.orange));
 		
 		//TODO Ad some human options... such as??
 		
 		// but for now...
+		p.add(new JLabel());
 		p.add(new JLabel());
 		JCheckBox prayer = new JCheckBox("No Prayer");
 		prayer.setSelected(true);

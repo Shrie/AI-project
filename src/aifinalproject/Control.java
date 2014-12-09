@@ -46,6 +46,8 @@ public class Control {
 	
 	private BufferedWriter dump;
 	
+	private long timeStart;
+	
 	//=== CONSTRUCTOR ===
 	public Control() {
 		
@@ -63,14 +65,14 @@ public class Control {
 		agents1.add(new Classifier());
 		agents1.add(new Human());
 		agents1.add(new Randy());
-                agents1.add(new NeuralNet());
+        agents1.add(new NeuralNet());
 		
 		
 		agents2.add(new Heuristics());
 		agents2.add(new Classifier());
 		agents2.add(new Human());
 		agents2.add(new Randy());
-                agents2.add(new NeuralNet());
+        agents2.add(new NeuralNet());
 		
 		// Initialize GUI
 		gui = new Interface(830, 540, agents1, agents2);
@@ -130,6 +132,7 @@ public class Control {
 
 		ArrayList<Node> winSequence;
 		gameOver = false;
+		timeStart = System.nanoTime();
 		
 		new Thread() { 
 			public void run() {
@@ -161,11 +164,11 @@ public class Control {
 		boolean p1 = true;
 		
 		// BEGIN GAME LOOP
-		while(!isGameOver()){
+		while(!isGameOver(agent1, agent2)){
 			
 			
 			// Make a move
-			if(p1){ //stateSpace.player1Turn()){
+			if(stateSpace.player1Turn()){
 				gui.setPrompt("Player 1, Make Your Move!");
 				
 				if(isPlayer1Human)
@@ -174,7 +177,7 @@ public class Control {
 					stateSpace = agent1.makeMove(stateSpace).copy();
 				
 				onFirstMove = false; // A move has been made
-				p1 = false;
+				
 				
 			} else {
 				gui.setPrompt("Player 2, Make Your Move!");
@@ -184,7 +187,6 @@ public class Control {
 				else
 					stateSpace = agent2.makeMove(stateSpace).copy();
 				
-				p1 = true;
 			}
 			
 			
@@ -280,10 +282,26 @@ public class Control {
 	 * 
 	 * @return	True if either player has reached the score to win.
 	 */
-	private boolean isGameOver(){
+	private boolean isGameOver(Agent a1, Agent a2){
 		
-		if(player1Score == scoreToWin || player2Score == scoreToWin)
+		if(player1Score == scoreToWin || player2Score == scoreToWin){
+			
+			Interface.clear();
+			
+			if(player1Score == scoreToWin){
+				Interface.print("\n  " + a1.getName() + " Wins!");
+				Interface.print(String.format(" Win Rate: %.0f%%", 100.0 * player1Score / (player1Score + player2Score)));
+				
+			}else{
+				Interface.print("\n   " + a2.getName() + " Wins!");
+				Interface.print(String.format(" Win Rate: %.0f%%", 100.0 * player2Score / (player2Score + player1Score)));
+			}
+			
+			double seconds = (System.nanoTime() - timeStart) / 1000000000.0;
+			Interface.print(String.format(" Elapsed Time: %.2fs", seconds));
+			
 			return true;
+		}
 		
 		return false;
 	}

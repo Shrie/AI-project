@@ -25,23 +25,23 @@ public class Classifier implements Agent {
 
 	private ArrayList<AFile> files;
 	private char player;
-	private int threshold;
+	private int threshold, delay;
 	
 	private JComboBox<File> input;
 	private ArrayList<Classified> data;
-	private JSpinner thresh;
+	private JSpinner thresh, del;
 	
 	public Classifier(){
 		
 		files = new FileManager().getClassiferFiles();
 	}
 	
-	public Classifier(char player, ArrayList<Classified> data, int threshold){
+	public Classifier(char player, ArrayList<Classified> data, int threshold, int delay){
 		
 		this.player = player;
 		this.data = data;
 		this.threshold = threshold;
-	
+		this.delay = delay;
 	}
 	
 	@Override
@@ -52,6 +52,8 @@ public class Classifier implements Agent {
 
 	@Override
 	public StateSpace makeMove(StateSpace in) {
+		
+		long time = System.nanoTime();
 		
 		in.expandStateSpace(1);
 		
@@ -89,6 +91,20 @@ public class Classifier implements Agent {
 			
 		}
 		
+		try {
+			Thread.sleep(1000 * delay);
+			
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+    	time = System.nanoTime() - time;
+    	Interface.clear();
+    	Interface.print("\n      Player " + player);
+    	Interface.print(String.format(" Move made in %d ms", time / 1000000));
+    	Interface.print(" States compared: " + data.size());
+		
 		
 		return move;
 
@@ -114,7 +130,12 @@ public class Classifier implements Agent {
 			.setHorizontalAlignment(JTextField.CENTER);
 		((DefaultEditor) thresh.getEditor()).getTextField().setEditable(false);
 		
-		p.add(new JLabel());
+		p.add(del = new JSpinner(new SpinnerNumberModel(0, 0, 50, 1)));
+		del.setBorder(BorderFactory.createTitledBorder("Delay (seconds)"));
+		((DefaultEditor) del.getEditor()).getTextField()
+			.setHorizontalAlignment(JTextField.CENTER);
+		((DefaultEditor) del.getEditor()).getTextField().setEditable(false);
+		
 		p.add(new JLabel());
 		
 		return p;
@@ -138,8 +159,7 @@ public class Classifier implements Agent {
 			}
 			
 			r.close();
-			
-			Interface.print("Classified " + data.size() + " states.");
+		
 			
 		} catch (FileNotFoundException e) {
 			Interface.print("File not found!");
@@ -150,7 +170,7 @@ public class Classifier implements Agent {
 		}
 		
 		
-		return new Classifier(team, data, (int) thresh.getValue());
+		return new Classifier(team, data, (int) thresh.getValue(), (int) del.getValue());
 	}
 	
 	private class Classified{

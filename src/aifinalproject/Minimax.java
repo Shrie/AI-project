@@ -13,6 +13,8 @@ public class Minimax {
 	private boolean pruning;
 	private char maximizer;
 	
+	private long nodesEvaluated;
+	
 	//=== CONSTRUCTORS ===
 	public Minimax(int depth, boolean pruning, char maximizer, int heuristic){
 		
@@ -20,6 +22,7 @@ public class Minimax {
 		this.pruning = pruning;
 		this.maximizer = maximizer;
 		this.heuristic = heuristic;
+		this.nodesEvaluated = 0;
 	}
 	
 
@@ -64,7 +67,7 @@ public class Minimax {
 			}
 			
 			root.getChildren().add(copy);
-			
+			nodesEvaluated++;
 		}
 		
 		
@@ -107,6 +110,11 @@ public class Minimax {
 		
 		
 		return maxSS;
+	}
+	
+	public long getNodesEvaluated(){
+		
+		return nodesEvaluated;
 	}
 	
 	

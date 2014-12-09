@@ -285,8 +285,7 @@ public class Interface extends JFrame
 		info.add(files = new JComboBox<File>());
 		for(int i=0; i<f.size(); i++)
 			files.addItem(f.get(i));
-		if(f.size() > 1)
-			files.setSelectedIndex(1);
+	
 		files.setBorder(BorderFactory.createTitledBorder("Dump Results To"));
 		
 		info.add(new JLabel());
