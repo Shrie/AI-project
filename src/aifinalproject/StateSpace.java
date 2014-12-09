@@ -56,10 +56,10 @@ public class StateSpace {
 	 */
 	public StateSpace(char[][] state){
 		
-		Node[][] copy = new Node[state.length][]; // Prepare Node matrix
+		Node[][] copy = new Node[state.length][state[0].length]; // Prepare Node matrix
 		
-		for(int i=0; i<copy.length; i++)
-			for(int j=0; j<copy[i].length; j++)
+		for(int i=0; i < copy.length; i++)
+			for(int j = 0; j < copy[i].length; j++)
 				copy[i][j] = new Node(state[i][j], i, j); // Copy data from char[][]
 		
 		this.state = copy; 

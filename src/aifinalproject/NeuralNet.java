@@ -9,7 +9,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -31,6 +31,7 @@ public class NeuralNet implements Agent {
     double rate;
     double lambda;
     boolean training;
+    boolean inProgress;
     int gameNumber; //possible to use modified sigmoid function for curve when changing lambda
     ArrayList<char[][]> moveList; //to save board states when training
     ArrayList<Double[]> outputLog; //to savee output value when training
@@ -51,7 +52,14 @@ public class NeuralNet implements Agent {
         input_hidden = new double[input.length][hidden.length];
         hidden_output = new double[hidden.length][output.length];
 
+        for (int i = 0; i < input.length; i++) {
+            for (int j = 0; j < hidden.length; j++) {
+                input_hidden[i][j] = 10 * Math.random() - 5;
+            }
+        }
+        System.out.println("BREAK");
         training = true;
+        inProgress = false;
 
         lambda = 1.0; // decreases over time
         rate = 0.5; //remains static
@@ -95,6 +103,9 @@ public class NeuralNet implements Agent {
      */
     @Override
     public StateSpace makeMove(StateSpace in) {
+        if (training) {
+            trainingLoop(10000);
+        }
         player = in.player1Turn() ? Control.PLAYER1 : Control.PLAYER2;
         StateSpace best = null;
         double high = -100;
@@ -112,7 +123,7 @@ public class NeuralNet implements Agent {
             }
         }
         // if training boolean is true, use train method
-        if (training && (best != null)) {
+        if (inProgress) {
             train(best);
         }
         //returns high move
@@ -126,9 +137,18 @@ public class NeuralNet implements Agent {
     @Override
     public JPanel createOptionPane() {
         JPanel p = new JPanel(new GridLayout(0, 1));
+        JSpinner trainingGames;
         p.setBorder(BorderFactory.createLineBorder(Color.YELLOW));
 
         p.add(new JLabel("TD Neural Net", JLabel.CENTER));
+
+        p.add(trainingGames = new JSpinner(new SpinnerNumberModel(10000, 1, 1000000, 1)));
+        ((JSpinner.DefaultEditor) trainingGames.getEditor()).getTextField()
+                .setHorizontalAlignment(JTextField.CENTER);
+        trainingGames.setValue((int) 10000);
+        trainingGames.setBorder(BorderFactory.createTitledBorder("Training Games"));
+
+        p.add(new JButton("Train Neural Net"));
 
         return p;
     }
@@ -168,7 +188,50 @@ public class NeuralNet implements Agent {
         }
     }
 
+    public void trainingLoop(int gameNumber) {
+        int gamesComplete = 0;
+        training = false;
+        inProgress = true;
+        System.out.println("Input Weights");
+        for (int i = 0; i < input.length; i++) {
+            for (int j = 0; j < hidden.length; j++) {
+                input_hidden[i][j] = 10 * Math.random() - 5;
+                System.out.println(input_hidden[i][j]);
+            }
+        }
+        System.out.println("entering training loop");
+        while (gamesComplete < gameNumber) {
+            char[][] board = new char[4][12];
+            System.out.println(gamesComplete);
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 12; j++) {
+                    board[i][j] = ' ';
+                }
+            }
+            StateSpace ss = new StateSpace(board);
+            boolean gameOver = false;
+            while (!gameOver) {
+                ss = makeMove(ss); //should also call train()
+                //System.out.println("move made");
+                //check for win
+                if ((ss.checkForWinSequence().size() > 1) || (ss.checkForDraw())) {
+                    gameOver = true;
+                    gamesComplete++;
+                    lambda = lambda * (1 - (gamesComplete/gameNumber));
+                }
+            }
+        }
+        System.out.println("Output Weights");
+        for (int i = 0; i < input.length; i++) {
+            for (int j = 0; j < hidden.length; j++) {
+                input_hidden[i][j] = 10 * Math.random() - 5;
+                System.out.println(input_hidden[i][j]);
+            }
+        }
+    }
+
     public void train(StateSpace in) {
+        //System.out.println("train");
         char[][] board = in.getCharStateSpace();
         //apply new board state to input nodes
         updateInput(board);
@@ -192,16 +255,17 @@ public class NeuralNet implements Agent {
         //calculate weight update value
         int logSize = outputLog.size();
         double sum = 0;
-
-        for (int i = 0; i <= logSize; i++) {
-            sum += Math.pow(lambda, logSize - i) * (outputLog.get(i)[0] * (1 - outputLog.get(i)[0]));
+        if (logSize > 1) {
+            for (int i = 1; i <= logSize; i++) {
+                sum += Math.pow(lambda, logSize - i) * (outputLog.get(i - 1)[0] * (1 - outputLog.get(i - 1)[0]));
+            }
+            double weightChange;
+            if (in.checkForWinSequence().isEmpty()) {
+                weightChange = rate * (outputLog.get(logSize - 1)[0] - outputLog.get(logSize - 2)[0]) * sum;
+            } else {
+                weightChange = rate * (1 - outputLog.get(logSize - 1)[0]) * sum;
+            }
+            updateWeights(weightChange); //apply weight change to all nodes
         }
-        double weightChange;
-        if (in.checkForWinSequence().isEmpty()) {
-            weightChange = rate * (outputLog.get(logSize)[0] - outputLog.get(logSize - 1)[0]) * sum;
-        } else {
-            weightChange = rate * (1 - outputLog.get(logSize - 1)[0]) * sum;
-        }
-        updateWeights(weightChange); //apply weight change to all nodes
     }
 }
