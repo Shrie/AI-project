@@ -21,10 +21,15 @@ public class FileManager {
 		
 	}
 	
-	public void writeOut(File file, String text){
+	public FileManager(File data){
+		
+		this.data = data;
+	}
+	
+	public void writeOut(String text){
 		
 		try {
-			w = new BufferedWriter(new FileWriter(file));
+			w = new BufferedWriter(new FileWriter(data));
 			
 			w.write(text);
 			w.flush();
