@@ -199,8 +199,12 @@ public class NeuralNet implements Agent {
                 System.out.println(input_hidden[i][j]);
             }
         }
+        
+        
         System.out.println("entering training loop");
         while (gamesComplete < gameNumber) {
+            moveList.clear();
+            outputLog.clear();
             char[][] board = new char[4][12];
             System.out.println(gamesComplete);
             for (int i = 0; i < 4; i++) {
