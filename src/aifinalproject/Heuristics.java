@@ -48,7 +48,6 @@ public class Heuristics implements Agent {
         this.prune = prune;
         this.heuristic = heuristic;
         
-        mm = new Minimax(depth, prune, player, heuristic);
     }
 
     //=== METHODS ===
@@ -72,7 +71,7 @@ public class Heuristics implements Agent {
 		}
  
     	
-    	return mm.decideMove(in);
+    	return new Minimax(depth, prune, player, heuristic).decideMove(in);
     	
     }
 

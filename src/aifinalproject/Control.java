@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 
 /**
  * Highest hierarchical class. Turn-cycle management happens here.
@@ -22,6 +23,8 @@ public class Control {
 	public static Control instance; // Instance of our entire program
 
 	//=== VARIABLES ===
+	public GregorianCalendar time;
+	
 	public StateSpace stateSpace; // The current state of the game
 	
 	private ArrayList<Agent> agents1, // List of AI agents for player 1 (populated manually in constructor)
@@ -45,6 +48,8 @@ public class Control {
 	
 	//=== CONSTRUCTOR ===
 	public Control() {
+		
+		time = new GregorianCalendar();
 
 		//Agent list initialization
 		agents1 = new ArrayList<Agent>(); // Player 1 agent options
@@ -166,7 +171,7 @@ public class Control {
 				if(isPlayer1Human)
 					humanPlay();
 				else
-					stateSpace = agent1.makeMove(stateSpace);
+					stateSpace = agent1.makeMove(stateSpace).copy();
 				
 				onFirstMove = false; // A move has been made
 				p1 = false;
@@ -177,7 +182,7 @@ public class Control {
 				if(isPlayer2Human)
 					humanPlay();
 				else
-					stateSpace = agent2.makeMove(stateSpace);
+					stateSpace = agent2.makeMove(stateSpace).copy();
 				
 				p1 = true;
 			}
