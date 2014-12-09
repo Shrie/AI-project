@@ -1,16 +1,14 @@
 package aifinalproject;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
 
 import javax.swing.JPanel;
-
-import aifinalproject.StateSpace.Set;
 
 /**
  * Controls the drawing out and human interaction of our matrix representation
@@ -155,6 +153,7 @@ public class Board extends JPanel
 			return; 
 		
 		Node[][] nodes = Control.instance.stateSpace.getStateSpace();
+		g.setStroke(new BasicStroke(3));
 		
 		// Print Node States
 		for(int i = 0; i < nodes.length; i++)
@@ -166,6 +165,7 @@ public class Board extends JPanel
 
 					g.drawLine(nodes[i][j].x + 5, nodes[i][j].y - 5,
 							nodes[i][j].x - 5, nodes[i][j].y + 5);	
+					
 				}
 				
 				
