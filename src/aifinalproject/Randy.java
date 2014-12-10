@@ -76,7 +76,7 @@ public class Randy implements Agent {
 			}
 			
 			
-			return poss.get(new Random().nextInt(poss.size() - 1));
+			return poss.get(new Random().nextInt(poss.size()));
 	}
 
 	/**

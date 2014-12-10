@@ -305,35 +305,44 @@ public class StateSpace {
     	
     	ArrayList<Node> win = checkForWinSequence();
     	
+    	// Win checks
     	if(!win.isEmpty()){
-    		if(win.get(0).getTeam() == opponent) // You loose
-    			return -5;
+    		if(win.get(0).getTeam() == opponent) // You lose
+    			return -10;
     	
     		if(win.get(0).getTeam() == player) // You win
-    			return 5;
+    			return 10;
     	}
     	
     	// If after you move there exists open triples for the enemy, you lose
     	if(!getOpenEndedTriples(opponent).isEmpty())
-    		return -3;
- 
-    	if(!getOpenTriples(opponent).isEmpty())
-    		return -3;
+    		return -9;
     	
-    	// If after you move you leave an open ended triples, you win
+    	// Still lose here
+    	if(!getOpenTriples(opponent).isEmpty())
+    		return -8;
+    	
+    	// If after you move you leave an open-ended triple, you win
     	if(!getOpenEndedTriples(player).isEmpty())
-    		return 3;
+    		return 9;
+    	
+    	
+    	// Add playable pairs
+    	int val = 0;
     	
     	if(!getOpenEndedPairs(opponent).isEmpty())
-    		return -2;
+    		val -= getOpenEndedPairs(opponent).size();
     	
+    	if(!getSingleEndedPairs(opponent).isEmpty())
+    		val -= getSingleEndedPairs(opponent).size();
+    		
     	if(!getOpenEndedPairs(player).isEmpty())
-    		return 2;
+    		val += getOpenEndedPairs(player).size();
     	
-    	if(!getOpenEndedTriples(player).isEmpty())
-    		return 2;
-    	
-    	return 0;
+    	if(!getSingleEndedPairs(player).isEmpty())
+    		val += getSingleEndedPairs(player).size();
+    	    	
+    	return val;
     }
     
    public ArrayList<Set> getOpenEndedTriples(char player){
