@@ -47,7 +47,7 @@ public class NeuralNet implements Agent {
      */
     public NeuralNet() {
         input = new double[48];
-        hidden = new double[12];
+        hidden = new double[24];
         output = new double[1];
         input_hidden = new double[input.length][hidden.length];
         hidden_output = new double[hidden.length][output.length];
@@ -105,7 +105,7 @@ public class NeuralNet implements Agent {
     public StateSpace makeMove(StateSpace in) {
         if (training) {
             Control.instance.getInterface().setPrompt("Training...");
-            trainingLoop(1);
+            trainingLoop(10000);
             Control.instance.getInterface().setPrompt("");
         }
         player = in.player1Turn() ? Control.PLAYER1 : Control.PLAYER2;

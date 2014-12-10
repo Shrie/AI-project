@@ -23,6 +23,8 @@ public class Heuristics implements Agent {
     			depth,
     			heuristic;
     
+    private long totalTime;
+    
     private Minimax mm;
     
     private boolean prune;
@@ -46,12 +48,16 @@ public class Heuristics implements Agent {
         this.depth = depth;
         this.prune = prune;
         this.heuristic = heuristic;
-        
+        this.totalTime = 0;
     }
 
     //=== METHODS ===
     
-
+    public long getTotalTime(){
+    	
+    	return totalTime;
+    }
+    
     //=== OVERRIDES ===
     @Override
     public String getName() {
@@ -77,6 +83,7 @@ public class Heuristics implements Agent {
 
     	
     	time = System.nanoTime() - time;
+    	totalTime += time;
     	Interface.clear();
     	Interface.print("\n      Player " + player);
     	Interface.print(String.format(" Move made in %d ms", time / 1000000));

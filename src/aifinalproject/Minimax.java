@@ -12,7 +12,7 @@ public class Minimax {
 	private int heuristic;
 	private boolean pruning;
 	private char maximizer;
-	
+		
 	private long nodesEvaluated;
 	
 	//=== CONSTRUCTORS ===
@@ -23,6 +23,7 @@ public class Minimax {
 		this.maximizer = maximizer;
 		this.heuristic = heuristic;
 		this.nodesEvaluated = 0;
+		
 	}
 	
 
